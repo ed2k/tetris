@@ -1,4 +1,9 @@
 <?php
+/*
+* Author: Jerome Renaux
+* E-mail: jerome.renaux@gmail.com
+ */
+
 // Step 1: Establish a connection
 $db = new PDO("mysql:host=localhost;dbname=tetris", "root", "");
 

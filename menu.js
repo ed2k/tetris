@@ -1,3 +1,9 @@
+/*
+ * Author: Jerome Renaux
+ * E-mail: jerome.renaux@gmail.com
+ */
+
+
 var Menu = {};
 
 Menu.preload = function(){
