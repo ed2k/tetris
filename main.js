@@ -1,14 +1,14 @@
 // TODO : comments, organize code
 
 //noinspection JSCheckFunctionSignatures,JSCheckFunctionSignatures,JSCheckFunctionSignatures
-var game = new Phaser.Game(gameWidth+menuWidth, numBlocksY*blockSize+blockSize, Phaser.AUTO, document.getElementById('game'));
+var game = new Phaser.Game(gameWidth+menuWidth+gameWidth, numBlocksY*blockSize+blockSize, Phaser.AUTO, document.getElementById('game'));
 game.state.add('Menu',Menu);
 game.state.add('Game',Game);
 game.state.add('Leaderboard',Leaderboard);
 
 game.state.start('Menu');
 
-//Place whine lines on the left and right sides of the game scene
+//Place white lines on the left and right sides of the game scene
 function placeSeparators(){
     var leftSeparator = game.add.graphics(0, 0);
     leftSeparator.lineStyle(3, 0xffffff, 1);
@@ -16,6 +16,9 @@ function placeSeparators(){
     var rightSeparator = game.add.graphics(gameWidth+menuWidth-3, 0);
     rightSeparator.lineStyle(3, 0xffffff, 1);
     rightSeparator.lineTo(0,game.world.height);
+    const rightSeparator2 = game.add.graphics(gameWidth+menuWidth+gameWidth-3, 0);
+    rightSeparator2.lineStyle(3, 0xffffff, 1);
+    rightSeparator2.lineTo(0,game.world.height);
 }
 
 //Place the start button that shows up on the menu screen and on the leaderboard

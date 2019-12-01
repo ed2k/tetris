@@ -42,11 +42,14 @@ Menu.keyMaps = {
 
 // The default set of keys to propose to the player on the menu screen
 Menu.defaultKeys = {
-    rotateleft : "W",
+    rotateleft : "UP",
+    rotateleft2: "W",
     rotateright : "X",
     pause : "SPACEBAR",
     moveleft : "LEFT",
+    moveleft2: "A",
     moveright : "RIGHT",
+    moverright: "D",
     movedown : "DOWN"
 };
 

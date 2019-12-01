@@ -5,7 +5,7 @@
  */
 
 // Step 1: Establish a connection
-$db = new PDO("mysql:host=localhost;dbname=tetris", "root", "");
+$db = new PDO("mysql:host=localhost;dbname=tetris", "a", "sy");
 
 function handleError($error,$id){
     if (!is_null($error[2])) {
