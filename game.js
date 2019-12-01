@@ -18,9 +18,10 @@ var movementLag = 100; // Delay in ms below which two consecutive key presses ar
 
 var scoreX = gameWidth+90; // x position of the score text
 
-var nbNext = 1; // number of next tetrominoes to display on the right
-var blockValue = 1; // value in the grid of a cell occupied by a block of a fallen tetromino
-var occupiedValue = 2; // value in the grid of a cell occupied by a block of the currently fallking tetromino
+var nbNext = 3; // number of next tetrominoes to display on the right
+const EMPTY = 0;
+const blockValue = 1; // value in the grid of a cell occupied by a block of a fallen tetromino
+const occupiedValue = 2; // value in the grid of a cell occupied by a block of the currently falling tetromino
 
 var score = [0, 0]; // score of the player
 var scoreIncrement = 50; // by how much the score increases with each completed line
@@ -73,7 +74,7 @@ var currentMovementTimer = 0; // counter to prevent excessive movements when key
 function Tetromino(player){
     this.id = player;
     this.shape = Math.floor(Math.random() * nbBlockTypes);
-    this.color = Math.floor(Math.random() * nbBlockTypes);
+    this.color = this.shape
     this.sprites = []; // list of the sprites of each block
     this.cells = []; // list of the cells occupied by the tetromino
     this.center = [0,0];
@@ -99,7 +100,7 @@ function Tetromino(player){
                 if(!validateCoordinates(this.id, x,y)){
                     conflict = true;
                 }
-                scene[this.id][x][y] = blockValue; // 1 for blocks of current tetromino, 2 for fallen blocks
+                scene[this.id][x][y] = blockValue;
             }
         }
         return conflict;
@@ -171,7 +172,9 @@ Game.create = function(){
     middleSeparator.lineTo(0,game.world.height);
     placeSeparators();
 
-    game.add.tileSprite(0,game.world.height-blockSize,gameWidth,blockSize,'blocks',0); // ground
+    // ground red vs blue
+    game.add.tileSprite(0,game.world.height-blockSize,gameWidth,blockSize,'blocks',0);
+    game.add.tileSprite(gameWidth+menuWidth,game.world.height-blockSize,gameWidth,blockSize,'blocks',1);
     // Sound on/off icon
     var sound = game.add.sprite(game.world.width-38, 0, 'sound', 0);
     sound.inputEnabled = true;
@@ -244,13 +247,14 @@ function updateTimer(){
     }
 }
 
+// global scoreText, linesText, scoreTitle
 function alignText(){
     var center = scoreTitle.x + scoreTitle.textWidth/2;
     scoreText[0].x = center - (scoreText[0].textWidth * 0.5);
     linesText[0].x = center - (linesText[0].textWidth * 0.5);
 }
 
-// queue, tetromino
+// global queue
 function manageTetrominos(player){
     let que = queue2;
     if (player == 0) {
@@ -276,11 +280,11 @@ function manageTetrominos(player){
     }else{
         // display the next tetromino(s)
         for (var i = 0; i < que.length; i++) {
-            var s_x = Math.floor((scoreTitle.x + scoreTitle.textWidth / 2) / 32)-1;
+            var s_x = Math.floor((scoreTitle.x + scoreTitle.textWidth / 2) / 32)-1.5;
             if (player == 1) {
-                s_x += 4;
+                s_x += 4.5;
             }
-            var s_y = 14;
+            var s_y = 10+(que.length - i)*3;
             que[i].materialize(s_x, s_y, false);
         }
     }
@@ -380,7 +384,6 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         tetro.cells[i][0] = new_x;
         tetro.cells[i][1] = new_y;
         tetro.sprites[i].x = tetro.id*(gameWidth+menuWidth)+new_x*blockSize;
-        //console.log(tetromino.id);
         tetro.sprites[i].y = new_y*blockSize;
         scene[player][old_x][old_y] = 0;
         scene[player][new_x][new_y] = blockValue;
@@ -402,7 +405,8 @@ function lineSum(player, l){
     return sum
 }
 
-// check if the lines corresponding to the y coordinates in lines are full ; if yes, clear them and collapse the lines above
+// check if the lines corresponding to the y coordinates in lines are full.
+// if yes, clear them and collapse the lines above
 function checkLines(player, lines) {
     var collapsedLines = [];
     for(var j = 0; j < lines.length; j++){
@@ -430,7 +434,7 @@ function cleanLine(player, line){
         tween.onComplete.add(destroy, this);
         tween.start();
         sceneSprites[player][k][line] = null;
-        scene[player][k][line] = 0;
+        scene[player][k][line] = EMPTY;
         delay += 50; // For each block, start the tween 50ms later so they move wave-like
     }
 }
@@ -439,8 +443,42 @@ function destroy(sprite){
     sprite.destroy();
 }
 
+// global scene, sceneSprites
+function increaseLines(player, numLines) {
+    const lscene = scene[player];
+    const lsSprites = sceneSprites[player];
+    // shit all static blocks uplscene[j][i]
+    for(let i = numLines; i < numBlocksY; i++){
+        for(let j = 0; j < numBlocksX; j++){
+            if (lscene[j][i-numLines] == EMPTY && lscene[j][i] == occupiedValue) { 
+                lsSprites[j][i - numLines] = lsSprites[j][i];
+                lscene[j][i - numLines] = lscene[j][i];
+                lsSprites[j][i] = null;
+                lscene[j][i] = EMPTY;
+                // Make some animation to shift the lines
+                var tween = game.add.tween(lsSprites[j][i-numLines]);
+                var new_y = lsSprites[j][i-numLines].y - (blockSize);
+                tween.to({ y: new_y}, 500,null,false);
+                tween.start();
+            }
+        }   
+    }
+    // fill the new lines at the bottom
+    for(let i = numBlocksY-numLines; i < numBlocksY; i++){
+        for(let j = 0; j < numBlocksX; j++){
+            if (lscene[j][i-numLines] == occupiedValue) {
+                const sprite = lsSprites[j][i-numLines];
+                const color = player ? 0:1;
+                lsSprites[j][i] = game.add.sprite(sprite.x, sprite.y+(numLines-1)*blockSize, 'blocks', color);
+                lscene[j][i] = occupiedValue;                
+            }
+        }
+    }
+}
+
 // Once a line has been cleared, make the lines above it fall down ; the argument lines is a list of the y coordinates of the
 // global lines that have been cleared
+// creat new lines on the other player
 function collapse(player, lines){
     // Find the min y value of the cleared lines, i.e. the highermost cleared line ; only lines above that one have to collapse
     var min = 999;
@@ -468,6 +506,9 @@ function collapse(player, lines){
             }
         }
     }
+    if (lines.length > 1) {
+        increaseLines(player ? 0:1, lines.length-1);
+    }
 }
 
 /*function displayScene(){
@@ -493,7 +534,7 @@ function spawnTetromino(player) {
         scene[player][x][y] = occupiedValue;
         sceneSprites[player][tetro.cells[i][0]][tetro.cells[i][1]] = tetro.sprites[i];
     }
-    checkLines(player, lines); // check if lines arecenter completed
+    checkLines(player, lines); // check if lines are center completed
     manageTetrominos(player); // spawn a new tetromino and update the next one    
 }
 // Makes the falling tetromino fall
