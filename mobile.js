@@ -3,6 +3,7 @@
 * E-mail: jerome.renaux@gmail.com
  */
 
+var game;
 var blocksPerTetromino = 4;
 var nbBlockTypes = 7; // 7 possible tetrominoes
 var blockSize = 32; // px
@@ -127,6 +128,7 @@ function preloadGame() {
 
 function createGame() {
     const game = this;
+    this.scale.startFullscreen();
     // 2D array of numBlocksX*numBlocksY cells corresponding to the playable scene; will contains 0 for empty, 1 if there is already
     // a block from the current tetromino, and 2 if there is a block from a fallen tetromino
     scene = [[],[]];
@@ -194,17 +196,17 @@ function createGame() {
     game.input.keyboard.enabled = true;
     const b2 = 2*blockSize;
     const b4 = 4*blockSize;
+    const width = gameWidth+menuWidth;
     game.add.sprite(0, b4+b2, 0, 'sound', 0);
-    game.add.sprite(gameWidth-b2, b4+b2, 0, 'sound', 0);
+    game.add.sprite(width-b2, b4+b2, 0, 'sound', 0);
     game.add.sprite(0, 2*b4+b2, 0, 'sound', 0);
-    game.add.sprite(gameWidth-b2, 2*b4+b2, 0, 'sound', 0);
+    game.add.sprite(width-b2, 2*b4+b2, 0, 'sound', 0);
     var zone1 = this.add.zone(0, b4+b2, b2, b4).setName('clockwise').setInteractive();
-    var zone2 = this.add.zone(gameWidth-b2, b4+b2, b2, b4).setName('cc').setInteractive();
+    var zone2 = this.add.zone(width-b2, b4+b2, b2, b4).setName('cc').setInteractive();
     var zone3 = this.add.zone(0, 2*b4+b2, b2, b4).setName('left').setInteractive();
-    var zone4 = this.add.zone(gameWidth-b2, 2*b4+b2, b2, b4).setName('right').setInteractive();
-    var zone5 = this.add.zone(b2, gameHeight-b2, gameWidth-b4, b2).setOrigin(0).setName('down').setInteractive();
+    var zone4 = this.add.zone(width-b2, 2*b4+b2, b2, b4).setName('right').setInteractive();
+    var zone5 = this.add.zone(b2, gameHeight-b2, width-b4, b2).setOrigin(0).setName('down').setInteractive();
     this.input.on('gameobjectdown', function (pointer, gameObject) {
-        console.log(pointer.x, pointer.y, gameObject.name, gameObject.x, gameObject.y);
         const key = gameObject.name;
         if (['clockwise', 'cc'].includes(key)) {
             if(canMove(0, rotate, key)){
@@ -262,7 +264,7 @@ Game.radio = { // object that stores sound-related information
     // Play sound if all conditions are met
     playSound : function(sound) {
         if (Game.radio.soundOn && !pauseState) {
-            sound.play();
+            //sound.play();
         }
     }
 };
@@ -281,7 +283,7 @@ function updateScore(player){
 
 function updateTimer(){
     if(completedLines[0]%linesThreshold == 0 || completedLines[1] % linesThreshold == 0){
-        loop.delay -= speedUp; // Accelerates the fall speed
+        //loop.delay -= speedUp; // Accelerates the fall speed
         scoreIncrement += scorePlus; // Make lines more rewarding
     }
 }
@@ -468,13 +470,14 @@ function cleanLine(player, line){
     var delay = 0;
     for (var k = 0; k < numBlocksX; k++) {
         // Make a small animation to send the removed blocks flying to the top
-        var tween = game.add.tween(sceneSprites[player][k][line]);
-        tween.to({ y: 0}, 500,null,false,delay);
-        tween.onComplete.add(destroy, this);
-        tween.start();
+        // var tween = selectTetromino(player).game.tweens.add(sceneSprites[player][k][line]);
+        // tween.to({ y: 0}, 500,null,false,delay);
+        // tween.onComplete.add(destroy, this);
+        // tween.start();
+        sceneSprites[player][k][line].destroy();
         sceneSprites[player][k][line] = null;
         scene[player][k][line] = EMPTY;
-        delay += 50; // For each block, start the tween 50ms later so they move wave-like
+        delay += 50; // For each block, start the tween 50ms later so they move wave-like       
     }
 }
 
@@ -518,6 +521,7 @@ function increaseLines(player, numLines) {
 // Once a line has been cleared, make the lines above it fall down ; the argument lines is a list of the y coordinates of the
 // global lines that have been cleared
 // creat new lines on the other player
+// TODO handle nonconsecutive collabse case
 function collapse(player, lines){
     // Find the min y value of the cleared lines, i.e. the highermost cleared line ; only lines above that one have to collapse
     var min = 999;
@@ -526,27 +530,30 @@ function collapse(player, lines){
             min = lines[k];
         }
     }
+    console.log(lines.length, min);
     const lscene = scene[player];
     const lsSprites = sceneSprites[player];
     // From the highermost cleared line - 1 to the top, collapse the lines
     for(var i = min-1; i >= 0; i--){
         for(var j = 0; j < numBlocksX; j++){
             if(lsSprites[j][i]) {
-                // lines.length = the number of lines that have been cleared simultaneously
+                // lines.length the number of lines that have been cleared simultaneously
                 lsSprites[j][i+ lines.length] = lsSprites[j][i];
                 lsSprites[j][i] = null;
                 lscene[j][i + lines.length] = occupiedValue;
                 lscene[j][i] = 0;
                 // Make some animation to collapse the lines
-                var tween = game.add.tween(lsSprites[j][i+ lines.length]);
+                // var tween = game.add.tween(lsSprites[j][i+ lines.length]);
                 var new_y = lsSprites[j][i+ lines.length].y + (lines.length * blockSize);
-                tween.to({ y: new_y}, 500,null,false);
-                tween.start();
+                lscene[j][i + lines.length].y = new_y;
+                console.log(new_y);
+                // tween.to({ y: new_y}, 500,null,false);                
+                // tween.start();
             }
         }
     }
     if (lines.length > 1) {
-        increaseLines(player ? 0:1, lines.length-1);
+        //increaseLines(player ? 0:1, lines.length-1);
     }
 }
 
@@ -649,4 +656,4 @@ let config = {
     }
 };
 
-var game = new Phaser.Game(config);
+game = new Phaser.Game(config);
