@@ -10,6 +10,7 @@ var numBlocksY = 19; // make the grid 19 blocks high
 var numBlocksX = 10; // make the grid 19 blocks wide
 
 var gameWidth = numBlocksX*blockSize; // width of the grid in pixels
+var gameHeight = numBlocksY*blockSize + blockSize;
 var menuWidth = 300;
 
 var movementLag = 100; // Delay in ms below which two consecutive key presses are counted as the same one (to avoid super fast movement)
@@ -97,10 +98,9 @@ class Tetromino {
             this.sprites.push(sprite);
             this.cells.push([x, y]);
             if (inGame) {
-                if(!validateCoordinates(this.id, x,y)){
+                if(!validateCoordinates(this.id, x,y)) {
                     conflict = true;
                 }
-                console.log(x,y);
                 scene[this.id][x][y] = blockValue;
             }
         }
@@ -148,13 +148,27 @@ function createGame() {
     gameOverState = false;
 
     // Places separator between the scene and the right pannel
-    var middleSeparator = game.add.graphics(gameWidth, 0);
-    middleSeparator.lineStyle(3, 0xffffff, 1);
-    //middleSeparator.lineTo(0,game.world.height);
-    //placeSeparators();
+    // var rect1 = new Phaser.Geom.Rectangle(0, 200, 100, 200);
+    // var rect2 = new Phaser.Geom.Rectangle(gameWidth-200, 200, 100, 200);
+    // var rect3 = new Phaser.Geom.Rectangle(0, 400, 100, 200);
+    // var rect4 = new Phaser.Geom.Rectangle(gameWidth-200, 400, 100, 200);
+    // var rect5 = new Phaser.Geom.Rectangle(0, 600, gameWidth, 200);
+    // game.add.graphics.fillStyle(0xffffff, 0.5);   // color: 0xRRGGBB
+    // game.add.graphics.fillRectShape(rect1);
+    // game.add.graphics.fillRectShape(rect2);
+    // game.add.graphics.fillRectShape(rect3);
+    // game.add.graphics.fillRectShape(rect4);
+    // game.add.graphics.fillRectShape(rect5);
+
+    // var middleSeparator = game.add.graphics(gameWidth, 0);
+    // middleSeparator.lineStyle(3, 0xffffff, 0.5);
+    // middleSeparator.lineTo(0,game.cameras.main.height);
+    // var leftSeparator = game.add.graphics(0, 0);
+    // leftSeparator.lineStyle(3, 0xffffff, 0.5);
+    // leftSeparator.lineTo(0,game.cameras.main.height);
 
     // ground red vs blue
-    //game.add.tileSprite(0,game.world.height-blockSize,gameWidth,blockSize,'blocks',0);
+    //game.add.tileSprite(0,game.cameras.main.height-blockSize,gameWidth,blockSize,'blocks',0);
     // Sound on/off icon
     var sound = game.add.sprite(game.cameras.main.width-38, 0, 'sound', 0);
     sound.inputEnabled = true;
@@ -178,13 +192,29 @@ function createGame() {
     // Register the keys selected by the player on the menu screen. It might not be the best practice to feed in the raw values
     // from the form, but I didn't want to focus too much on this functionality.
     game.input.keyboard.enabled = true;
-    var zone1 = this.add.zone(0, 0, 100, 100).setOrigin(0).setName('clcokwise').setInteractive();
-    var zone2 = this.add.zone(gameWidth-100, 0, 100, 100).setOrigin(0).setName('cc').setInteractive();
-    var zone3 = this.add.zone(0, 300, 100, 100).setOrigin(0).setName('left').setInteractive();
-    var zone4 = this.add.zone(gameWidth-100, 300, 100, 100).setOrigin(0).setName('right').setInteractive();
-    var zone5 = this.add.zone(10, 500, gameWidth, 200).setOrigin(0).setName('down').setInteractive();
+    const b2 = 2*blockSize;
+    const b4 = 4*blockSize;
+    game.add.sprite(0, b4+b2, 0, 'sound', 0);
+    game.add.sprite(gameWidth-b2, b4+b2, 0, 'sound', 0);
+    game.add.sprite(0, 2*b4+b2, 0, 'sound', 0);
+    game.add.sprite(gameWidth-b2, 2*b4+b2, 0, 'sound', 0);
+    var zone1 = this.add.zone(0, b4+b2, b2, b4).setName('clockwise').setInteractive();
+    var zone2 = this.add.zone(gameWidth-b2, b4+b2, b2, b4).setName('cc').setInteractive();
+    var zone3 = this.add.zone(0, 2*b4+b2, b2, b4).setName('left').setInteractive();
+    var zone4 = this.add.zone(gameWidth-b2, 2*b4+b2, b2, b4).setName('right').setInteractive();
+    var zone5 = this.add.zone(b2, gameHeight-b2, gameWidth-b4, b2).setOrigin(0).setName('down').setInteractive();
     this.input.on('gameobjectdown', function (pointer, gameObject) {
         console.log(pointer.x, pointer.y, gameObject.name, gameObject.x, gameObject.y);
+        const key = gameObject.name;
+        if (['clockwise', 'cc'].includes(key)) {
+            if(canMove(0, rotate, key)){
+                move(0, rotate, null, key, 1);
+            }
+        } else {
+            if(canMove(0, slide, key)){
+                move(0, slide, slideCenter, key, 1);
+            }
+        }
     });
 
     // Timer to make the the falling tetromino fall
@@ -347,7 +377,7 @@ function canMove(player, coordinatesCallback,dir) {
     }
     const tetro = selectTetromino(player);
     for(var i = 0; i < tetro.cells.length; i++){
-        var new_coord = coordinatesCallback(tetro, i,dir); // return coords in terms of cells, not pixels
+        var new_coord = coordinatesCallback(tetro, i, dir); // return coords in terms of cells, not pixels
         var new_x = new_coord[0];
         var new_y = new_coord[1];
         if(!validateCoordinates(player, new_x,new_y)){
@@ -402,7 +432,7 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         tetro.center = [center_coord[0],center_coord[1]];
     }
     if(soundOnMove) {
-        Game.radio.playSound(Game.radio.moveSound);
+        //Game.radio.playSound(Game.radio.moveSound);
     }
 }
 
@@ -520,14 +550,6 @@ function collapse(player, lines){
     }
 }
 
-/*function displayScene(){
-    console.log('Scene length'+scene.length);
-    for(var i = 0; i < scene.length; i++){
-        for(var j = 0; j < scene[i].length; j++) {
-            console.log(scene[i][j]);
-        }
-    }
-}*/
 function spawnTetromino(player, game) {
     const tetro = selectTetromino(player);
     // and to spawn a new falling tetromino
@@ -596,30 +618,7 @@ function gameOver(){
     document.getElementById("name").style.display =  "block";
 }
 
-// global gCursors
 Game.update = function(){
-    currentMovementTimer += this.time.elapsed;
-    if (currentMovementTimer > movementLag) { // Prevent too rapid firing
-        if(pause.isDown){
-            managePauseScreen();
-        }
-      [0, 1].forEach(player => {
-        ['left', 'right', 'down', 'clockwise'].forEach(key => {
-          if (gCursors[player][key].isDown) {
-            if (['clockwise'].includes(key)) {
-                if(canMove(player, rotate, key)){
-                    move(player, rotate, null, key, 1);
-                }
-            } else {
-                if(canMove(player, slide, key)){
-                    move(player, slide, slideCenter, key, 1);
-                }
-            }
-          }
-        });
-      });
-        currentMovementTimer = 0;
-    }
 };
 
 Game.shutdown = function(){
@@ -641,8 +640,8 @@ var Preloader = new Phaser.Class({
 
 let config = {
     type: Phaser.AUTO,
-    width: gameWidth+menuWidth,
-    height: numBlocksY*blockSize+blockSize,
+    width: gameWidth+menuWidth+2*blockSize,
+    height: gameHeight,
     parent: document.getElementById('game'),
     scene: {
         preload: preloadGame,
