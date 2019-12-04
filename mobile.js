@@ -18,7 +18,7 @@ var movementLag = 100; // Delay in ms below which two consecutive key presses ar
 
 var scoreX = gameWidth+90; // x position of the score text
 
-var nbNext = 3; // number of next tetrominoes to display on the right
+var nbNext = 6; // number of next tetrominoes to display on the right
 const EMPTY = 0;
 const blockValue = 1; // value in the grid of a cell occupied by a block of a fallen tetromino
 const occupiedValue = 2; // value in the grid of a cell occupied by a block of the currently falling tetromino
@@ -128,7 +128,7 @@ function preloadGame() {
 
 function createGame() {
     const game = this;
-    this.scale.startFullscreen();
+    //this.scale.startFullscreen();
     // 2D array of numBlocksX*numBlocksY cells corresponding to the playable scene; will contains 0 for empty, 1 if there is already
     // a block from the current tetromino, and 2 if there is a block from a fallen tetromino
     scene = [[],[]];
@@ -178,15 +178,13 @@ function createGame() {
 
     // Text for the score, number of lines, next tetromino
     scoreTitle = game.add.bitmapText(gameWidth+50, 0, 'desyrel', 'Score',64);
-    scoreText = [game.add.bitmapText(scoreX, 60, 'desyrel', '0', 64),
-        game.add.bitmapText(scoreX+60, 60, 'desyrel', '0', 64)];
+    scoreText = [game.add.bitmapText(scoreX, 60, 'desyrel', '0', 64), null];
     var linesTitle = game.add.bitmapText(gameWidth+50, 140, 'desyrel', 'Lines',64);
-    linesText = [game.add.bitmapText(scoreX, 200, 'desyrel', '0', 64),
-        game.add.bitmapText(scoreX+60, 200, 'desyrel', '0', 64)];
+    linesText = [game.add.bitmapText(scoreX, 200, 'desyrel', '2', 64), null];
     var nextTitle = game.add.bitmapText(gameWidth+75, 300, 'desyrel', 'Next',64);
-    alignText();
-    nextTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (nextTitle.textWidth * 0.5);
-    linesTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (linesTitle.textWidth * 0.5);
+    //alignText();
+    //nextTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (nextTitle.textWidth * 0.5);
+    //linesTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (linesTitle.textWidth * 0.5);
 
     // spawn a new tetromino and the scene and update the next one
     manageTetrominos(0, this);
@@ -277,7 +275,7 @@ function updateScore(player){
     completedLines[player]++;
     scoreText[player].text = score[player];
     linesText[player].text = completedLines[player];
-    alignText();
+    //alignText();
     updateTimer();
 }
 
@@ -319,13 +317,10 @@ function manageTetrominos(player, game){
     if(conflict){
         gameOver();
     }else{
+        const s_x = 11.5;
         // display the next tetromino
         for (var i = 0; i < que.length; i++) {
-            var s_x = Math.floor((scoreTitle.x + scoreTitle.textWidth / 2) / 32)-1.5;
-            if (player == 1) {
-                s_x += 4.5;
-            }
-            var s_y = 10+(que.length - i)*3;
+            const s_y = 1+(que.length - i)*3;
             que[i].materialize(s_x, s_y, false);
         }
     }
@@ -545,8 +540,7 @@ function collapse(player, lines){
                 // Make some animation to collapse the lines
                 // var tween = game.add.tween(lsSprites[j][i+ lines.length]);
                 var new_y = lsSprites[j][i+ lines.length].y + (lines.length * blockSize);
-                lscene[j][i + lines.length].y = new_y;
-                console.log(new_y);
+                lsSprites[j][i + lines.length].y = new_y;
                 // tween.to({ y: new_y}, 500,null,false);                
                 // tween.start();
             }
@@ -632,23 +626,66 @@ Game.shutdown = function(){
     document.getElementById('name').style.display = "none";
 };
 
-var Preloader = new Phaser.Class({
-    Extends: Phaser.Scene,
-    initialize:
-    function Preloader () {
-        Phaser.Scene.call(this, 'preloader');
-    },
-    preload: function () {
-    },
-    create: function () {
-        this.scene.start('Game');
-    }
+
+// Resize
+function resizeApp()
+{
+	var div = document.getElementById('game');
+			
+	div.style.width = window.innerHeight * 0.6;
+	div.style.height = window.innerHeight;
+}
+		
+window.addEventListener('resize', function(e)
+{
+	resizeApp();
 });
+
+// Fullscreen
+function fs_status()
+{
+	if(document.fullscreenElement)
+	{
+		return true;
+	}
+	else if(document.webkitFullscreenElement)
+	{
+		return true;
+	}
+	else if(document.mozFullScreenElement)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+		
+function goFullscreen()
+{
+	if(fs_status())
+	{
+		return;
+	}
+			
+	var el = document.getElementsByTagName('canvas')[0];
+	var requestFullScreen = el.requestFullscreen || el.msRequestFullscreen || el.mozRequestFullScreen || el.webkitRequestFullscreen;
+			
+	if(requestFullScreen)
+	{
+		requestFullScreen.call(el);
+	}
+}
+		
+//document.getElementsByTagName('div')[0].addEventListener('click', goFullscreen);
+
+resizeApp();
 
 let config = {
     type: Phaser.AUTO,
-    width: gameWidth+menuWidth+2*blockSize,
-    height: gameHeight,
+    width: 9*64,
+    height: 15*64,
     parent: document.getElementById('game'),
     scene: {
         preload: preloadGame,
@@ -656,4 +693,17 @@ let config = {
     }
 };
 
-game = new Phaser.Game(config);
+var App = function() {};
+
+App.prototype.start = function()
+{
+	var game = new Phaser.Game(config);
+	game._CONFIG = config;
+};
+
+window.onload = function()
+{
+	var app = new App();
+	app.start();
+}
+
