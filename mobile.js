@@ -109,7 +109,8 @@ class Tetromino {
     }
 }
 
-function preloadGame() {
+var Game = new Phaser.Scene("Game");
+Game.preload = function () {
     // load the fonts here for use in the different game states
     this.load.bitmapFont('gameover', 'assets/fonts/gameover.png', 'assets/fonts/gameover.fnt');
     this.load.bitmapFont('videogame', 'assets/fonts/videogame.png', 'assets/fonts/videogame.fnt'); // converted from ttf using http://kvazars.com/littera/
@@ -126,7 +127,7 @@ function preloadGame() {
     this.load.audio('gameover','assets/sound/gameover.mp3','assets/sound/gameover.ogg');
 }
 
-function createGame() {
+Game.create = function() {
     const game = this;
     //this.scale.startFullscreen();
     // 2D array of numBlocksX*numBlocksY cells corresponding to the playable scene; will contains 0 for empty, 1 if there is already
@@ -233,9 +234,6 @@ function createGame() {
     // Game.radio.music.volume = 0.2;
     // Game.radio.music.loopFull();
 }
-
-class cGame {}
-let Game = new cGame();
 
 Game.radio = { // object that stores sound-related information
     soundOn : true,
@@ -626,77 +624,17 @@ Game.shutdown = function(){
     document.getElementById('name').style.display = "none";
 };
 
-
-// Resize
-function resizeApp()
-{
-	var div = document.getElementById('game');
-			
-	div.style.width = window.innerHeight * 0.6;
-	div.style.height = window.innerHeight;
-}
-		
-window.addEventListener('resize', function(e)
-{
-	resizeApp();
-});
-
-// Fullscreen
-function fs_status()
-{
-	if(document.fullscreenElement)
-	{
-		return true;
-	}
-	else if(document.webkitFullscreenElement)
-	{
-		return true;
-	}
-	else if(document.mozFullScreenElement)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-		
-function goFullscreen()
-{
-	if(fs_status())
-	{
-		return;
-	}
-			
-	var el = document.getElementsByTagName('canvas')[0];
-	var requestFullScreen = el.requestFullscreen || el.msRequestFullscreen || el.mozRequestFullScreen || el.webkitRequestFullscreen;
-			
-	if(requestFullScreen)
-	{
-		requestFullScreen.call(el);
-	}
-}
-		
-//document.getElementsByTagName('div')[0].addEventListener('click', goFullscreen);
-
-resizeApp();
-
-let config = {
-    type: Phaser.AUTO,
-    width: 9*64,
-    height: 15*64,
-    parent: document.getElementById('game'),
-    scene: {
-        preload: preloadGame,
-        create: createGame,
-    }
-};
-
 var App = function() {};
-
-App.prototype.start = function()
-{
+App.prototype.start = function() {
+    var e = [Game];
+    let config = {
+        type: Phaser.AUTO,
+        width: 9*64,
+        height: 15*64,
+        parent: document.getElementById('game'),
+        scene: e,
+        title: "tetris for mobile"
+    };    
 	var game = new Phaser.Game(config);
 	game._CONFIG = config;
 };
@@ -706,4 +644,3 @@ window.onload = function()
 	var app = new App();
 	app.start();
 }
-
