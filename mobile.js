@@ -95,14 +95,14 @@ class Tetromino {
         }
         this.sprites = [];
         var conflict = false; // Are there occupied cells where the tetrominon will appear? If yes -> game over
+        const spriteX = inGame ? gInGameOffsetY : 0.5;
+        const spriteY = inGame ? gInGameOffsetY : (1.5);
         for(var i = 0; i < blocksPerTetromino; i++) {
             // Compute the coordinates of each block of the tetromino, using it's offset from the center
             var x = c_x + offsets[this.shape][i][0];
             var y = c_y + offsets[this.shape][i][1];
-            const spriteX = inGame ? gInGameOffsetY * blockSize * gScale : 0.5 * blockSize * gScale;
-            const spriteY = inGame ? gInGameOffsetY * blockSize * gScale : (1.5) * blockSize * gScale;
-            var sprite = this.game.add.sprite(spriteX + (x) * blockSize * gScale, 
-              spriteY + (y) * blockSize * gScale, 'blocks', this.color)
+            var sprite = this.game.add.sprite((spriteX + x-2) * blockSize * gScale, 
+              (spriteY + y) * blockSize * gScale, 'blocks', this.color)
               .setScale(gScale);
             this.sprites.push(sprite);
             this.cells.push([x, y]);
@@ -538,7 +538,6 @@ function collapse(player, lines){
             min = lines[k];
         }
     }
-    console.log(lines.length, min);
     const lscene = scene[player];
     const lsSprites = sceneSprites[player];
     // From the highermost cleared line - 1 to the top, collapse the lines
@@ -552,7 +551,7 @@ function collapse(player, lines){
                 lscene[j][i] = 0;
                 // Make some animation to collapse the lines
                 // var tween = game.add.tween(lsSprites[j][i+ lines.length]);
-                var new_y = lsSprites[j][i+ lines.length].y + (lines.length * blockSize);
+                var new_y = lsSprites[j][i+ lines.length].y + (lines.length * blockSize*gScale);
                 lsSprites[j][i + lines.length].y = new_y;
                 // tween.to({ y: new_y}, 500,null,false);                
                 // tween.start();
@@ -631,13 +630,6 @@ function gameOver(){
     // Display the form to input your name for the leaderboard
     document.getElementById("name").style.display =  "block";
 }
-
-Game.update = function(){
-};
-
-Game.shutdown = function(){
-    document.getElementById('name').style.display = "none";
-};
 
 var App = function() {};
 App.prototype.start = function() {
