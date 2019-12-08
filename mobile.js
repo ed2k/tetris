@@ -644,8 +644,8 @@ App.prototype.start = function() {
     var e = [Game];
     let config = {
         type: Phaser.AUTO,
-        width: 9*64,
-        height: 15*64,
+        //width: 9*64,
+        height: gWindowHeight,
         parent: document.getElementById('gameLayout'),
         scene: e,
         title: "tetris for mobile"
