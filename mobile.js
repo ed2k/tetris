@@ -3,10 +3,15 @@
 * E-mail: jerome.renaux@gmail.com
  */
 
+var gWindowHeight = 640;
+var gWindowWidth = 480
 var game;
 var blocksPerTetromino = 4;
 var nbBlockTypes = 7; // 7 possible tetrominoes
 var blockSize = 32; // px
+var gScale = 1;
+var gInGameOffsetX = 4;
+var gInGameOffsetY = 6;
 var numBlocksY = 19; // make the grid 19 blocks high
 var numBlocksX = 10; // make the grid 19 blocks wide
 
@@ -16,7 +21,7 @@ var menuWidth = 300;
 
 var movementLag = 100; // Delay in ms below which two consecutive key presses are counted as the same one (to avoid super fast movement)
 
-var scoreX = gameWidth+90; // x position of the score text
+var scoreX = 0; // x position of the score text
 
 var nbNext = 6; // number of next tetrominoes to display on the right
 const EMPTY = 0;
@@ -94,8 +99,11 @@ class Tetromino {
             // Compute the coordinates of each block of the tetromino, using it's offset from the center
             var x = c_x + offsets[this.shape][i][0];
             var y = c_y + offsets[this.shape][i][1];
-            const spriteX = inGame ? this.id*(gameWidth+menuWidth) : 0;
-            var sprite = this.game.add.sprite(spriteX + x * blockSize, y * blockSize, 'blocks', this.color);
+            const spriteX = inGame ? gInGameOffsetY * blockSize * gScale : 0.5 * blockSize * gScale;
+            const spriteY = inGame ? gInGameOffsetY * blockSize * gScale : (1.5) * blockSize * gScale;
+            var sprite = this.game.add.sprite(spriteX + (x) * blockSize * gScale, 
+              spriteY + (y) * blockSize * gScale, 'blocks', this.color)
+              .setScale(gScale);
             this.sprites.push(sprite);
             this.cells.push([x, y]);
             if (inGame) {
@@ -177,12 +185,15 @@ Game.create = function() {
     sound.inputEnabled = true;
     //sound.events.onInputDown.add(Game.radio.manageSound, this);
 
+    const width = gWindowWidth;
     // Text for the score, number of lines, next tetromino
-    scoreTitle = game.add.bitmapText(gameWidth+50, 0, 'desyrel', 'Score',64);
-    scoreText = [game.add.bitmapText(scoreX, 60, 'desyrel', '0', 64), null];
-    var linesTitle = game.add.bitmapText(gameWidth+50, 140, 'desyrel', 'Lines',64);
-    linesText = [game.add.bitmapText(scoreX, 200, 'desyrel', '2', 64), null];
-    var nextTitle = game.add.bitmapText(gameWidth+75, 300, 'desyrel', 'Next',64);
+    // scoreTitle = game.add.bitmapText(gameWidth+50, 0, 'desyrel', 'Score',64);
+    scoreText = [game.add.bitmapText(scoreX, 4*blockSize*gScale, 'desyrel', '0', 64)
+      .setScale(gScale), null];
+    // var linesTitle = game.add.bitmapText(gameWidth+50, 140, 'desyrel', 'Lines',64);
+    linesText = [game.add.bitmapText(width - 3*blockSize*gScale, 4*blockSize*gScale,
+         'desyrel', '2', 64).setScale(gScale), null];
+    // var nextTitle = game.add.bitmapText(gameWidth+75, 300, 'desyrel', 'Next',64);
     //alignText();
     //nextTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (nextTitle.textWidth * 0.5);
     //linesTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (linesTitle.textWidth * 0.5);
@@ -193,18 +204,22 @@ Game.create = function() {
     // Register the keys selected by the player on the menu screen. It might not be the best practice to feed in the raw values
     // from the form, but I didn't want to focus too much on this functionality.
     game.input.keyboard.enabled = true;
-    const b2 = 2*blockSize;
-    const b4 = 4*blockSize;
-    const width = gameWidth+menuWidth;
-    game.add.sprite(0, b4+b2, 0, 'sound', 0);
-    game.add.sprite(width-b2, b4+b2, 0, 'sound', 0);
-    game.add.sprite(0, 2*b4+b2, 0, 'sound', 0);
-    game.add.sprite(width-b2, 2*b4+b2, 0, 'sound', 0);
-    var zone1 = this.add.zone(0, b4+b2, b2, b4).setName('clockwise').setInteractive();
-    var zone2 = this.add.zone(width-b2, b4+b2, b2, b4).setName('cc').setInteractive();
-    var zone3 = this.add.zone(0, 2*b4+b2, b2, b4).setName('left').setInteractive();
-    var zone4 = this.add.zone(width-b2, 2*b4+b2, b2, b4).setName('right').setInteractive();
-    var zone5 = this.add.zone(b2, gameHeight-b2, width-b4, b2).setOrigin(0).setName('down').setInteractive();
+    const b2 = 2*blockSize*gScale;
+    const b4 = 4*blockSize*gScale;
+    // positioning turn area
+    game.add.sprite(blockSize, gWindowHeight-b4-b4-b4, 0, 'sound', 0);
+    game.add.sprite(width-b2, gWindowHeight-b4-b4-b4, 0, 'sound', 0);
+    game.add.sprite(blockSize, gWindowHeight-b4-b4, 0, 'sound', 0);
+    // positioning right area
+    game.add.sprite(width-b2, gWindowHeight-b4-b4, 0, 'sound', 0);
+    // postioning down area
+    game.add.sprite(b2, gWindowHeight-b2, 0, 'sound', 0);
+    game.add.sprite(width-b4, gWindowHeight-b2, 0, 'sound', 0);
+    var zone1 = this.add.zone(0, gWindowHeight-b4-b4-b4, b2, b4).setName('clockwise').setInteractive();
+    var zone2 = this.add.zone(width-b2, gWindowHeight-b4-b4-b4, b2, b4).setName('cc').setInteractive();
+    var zone3 = this.add.zone(0, gWindowHeight-b4-b4, b2, b4).setName('left').setInteractive();
+    var zone4 = this.add.zone(width-b2, gWindowHeight-b4-b4, b2, b4).setName('right').setInteractive();
+    var zone5 = this.add.zone(b2, gWindowHeight-b2, width-b4, b2).setOrigin(0).setName('down').setInteractive();
     this.input.on('gameobjectdown', function (pointer, gameObject) {
         const key = gameObject.name;
         if (['clockwise', 'cc'].includes(key)) {
@@ -315,10 +330,10 @@ function manageTetrominos(player, game){
     if(conflict){
         gameOver();
     }else{
-        const s_x = 11.5;
+        const s_y = 0;
         // display the next tetromino
         for (var i = 0; i < que.length; i++) {
-            const s_y = 1+(que.length - i)*3;
+            const s_x = 1+i*3;
             que[i].materialize(s_x, s_y, false);
         }
     }
@@ -417,8 +432,8 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         var new_y = new_coord[1];
         tetro.cells[i][0] = new_x;
         tetro.cells[i][1] = new_y;
-        tetro.sprites[i].x = tetro.id*(gameWidth+menuWidth)+new_x*blockSize;
-        tetro.sprites[i].y = new_y*blockSize;
+        tetro.sprites[i].x = tetro.id*(gameWidth+menuWidth)+(gInGameOffsetX+new_x)*blockSize*gScale;
+        tetro.sprites[i].y = (gInGameOffsetY+new_y)*blockSize*gScale;
         scene[player][old_x][old_y] = 0;
         scene[player][new_x][new_y] = blockValue;
     }
@@ -631,12 +646,14 @@ App.prototype.start = function() {
         type: Phaser.AUTO,
         width: 9*64,
         height: 15*64,
-        parent: document.getElementById('game'),
+        parent: document.getElementById('gameLayout'),
         scene: e,
         title: "tetris for mobile"
     };    
 	var game = new Phaser.Game(config);
-	game._CONFIG = config;
+    game._CONFIG = config;
+    game._CONFIG.centerX = Math.round(.5 * config.width);
+    game._CONFIG.centerY = Math.round(.5 * config.height);
 };
 
 window.onload = function()

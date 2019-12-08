@@ -26,15 +26,19 @@
     </style>
 </head>
 <body>
-    <div id='game'></div>
+    <div id='gameLayout'></div>
     <script>
 // Resize
 function resizeApp()
 {
-	var div = document.getElementById('game');
+	var div = document.getElementById('gameLayout');
 			
 	div.style.width = window.innerHeight * 0.6;
-	div.style.height = window.innerHeight;
+    div.style.height = window.innerHeight;
+    gScale = window.innerHeight/30/32;
+    gWindowHeight = window.innerHeight;
+    gWindowWidth = window.innerWidth;
+    console.log('scale '+gScale);
 }
 		
 window.addEventListener('resize', function(e)
