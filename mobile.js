@@ -15,10 +15,6 @@ var gInGameOffsetY = 6;
 var numBlocksY = 19; // make the grid 19 blocks high
 var numBlocksX = 10; // make the grid 19 blocks wide
 
-var gameWidth = numBlocksX*blockSize; // width of the grid in pixels
-var gameHeight = numBlocksY*blockSize + blockSize;
-var menuWidth = 300;
-
 var movementLag = 100; // Delay in ms below which two consecutive key presses are counted as the same one (to avoid super fast movement)
 
 var scoreX = 0; // x position of the score text
@@ -159,60 +155,37 @@ Game.create = function() {
     gameOverState = false;
 
     // Places separator around the scene
-    const g = game.add.graphics(0,0);
+    const g = game.add.graphics();
     g.lineStyle(1, 0x00FF00, 1.0);
     const unit = blockSize*gScale;
     g.strokeRect(gInGameOffsetX*unit, gInGameOffsetY*unit, numBlocksX*unit, numBlocksY*unit);
 
-    // var middleSeparator = game.add.graphics(gameWidth, 0);
-    // middleSeparator.lineStyle(3, 0xffffff, 0.5);
-    // middleSeparator.lineTo(0,game.cameras.main.height);
-    // var leftSeparator = game.add.graphics(0, 0);
-    // leftSeparator.lineStyle(3, 0xffffff, 0.5);
-    // leftSeparator.lineTo(0,game.cameras.main.height);
-
-    // ground red vs blue
-    //game.add.tileSprite(0,game.cameras.main.height-blockSize,gameWidth,blockSize,'blocks',0);
     // Sound on/off icon
     var sound = game.add.sprite(game.cameras.main.width-38, 0, 'sound', 0);
     sound.inputEnabled = true;
     //sound.events.onInputDown.add(Game.radio.manageSound, this);
 
     const width = gWindowWidth;
-    // Text for the score, number of lines, next tetromino
-    // scoreTitle = game.add.bitmapText(gameWidth+50, 0, 'desyrel', 'Score',64);
     scoreText = [game.add.bitmapText(scoreX, 4*blockSize*gScale, 'desyrel', '0', 64)
       .setScale(gScale), null];
-    // var linesTitle = game.add.bitmapText(gameWidth+50, 140, 'desyrel', 'Lines',64);
     linesText = [game.add.bitmapText(width - 3*blockSize*gScale, 4*blockSize*gScale,
-         'desyrel', '2', 64).setScale(gScale), null];
-    // var nextTitle = game.add.bitmapText(gameWidth+75, 300, 'desyrel', 'Next',64);
-    //alignText();
-    //nextTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (nextTitle.textWidth * 0.5);
-    //linesTitle.x = scoreTitle.x + scoreTitle.textWidth/2 - (linesTitle.textWidth * 0.5);
+         'desyrel', '0', 64).setScale(gScale), null];
 
     // spawn a new tetromino and the scene and update the next one
     manageTetrominos(0, this);
 
-    // Register the keys selected by the player on the menu screen. It might not be the best practice to feed in the raw values
-    // from the form, but I didn't want to focus too much on this functionality.
-    game.input.keyboard.enabled = true;
+    // Register the zone selected by the player on the menu screen. It might not be the best practice to feed in the raw values
     const b2 = 2*blockSize*gScale;
     const b4 = 4*blockSize*gScale;
-    // positioning turn area
-    game.add.sprite(blockSize, gWindowHeight-b4-b4-b4, 0, 'sound', 0);
-    game.add.sprite(width-b2, gWindowHeight-b4-b4-b4, 0, 'sound', 0);
-    game.add.sprite(blockSize, gWindowHeight-b4-b4, 0, 'sound', 0);
-    // positioning right area
-    game.add.sprite(width-b2, gWindowHeight-b4-b4, 0, 'sound', 0);
-    // postioning down area
-    game.add.sprite(b2, gWindowHeight-b2, 0, 'sound', 0);
-    game.add.sprite(width-b4, gWindowHeight-b2, 0, 'sound', 0);
-    var zone1 = this.add.zone(0, gWindowHeight-b4-b4-b4, b2, b4).setName('clockwise').setInteractive();
-    var zone2 = this.add.zone(width-b2, gWindowHeight-b4-b4-b4, b2, b4).setName('cc').setInteractive();
-    var zone3 = this.add.zone(0, gWindowHeight-b4-b4, b2, b4).setName('left').setInteractive();
-    var zone4 = this.add.zone(width-b2, gWindowHeight-b4-b4, b2, b4).setName('right').setInteractive();
-    var zone5 = this.add.zone(b2, gWindowHeight-b2, width-b4, b2).setOrigin(0).setName('down').setInteractive();
+    const h = gWindowHeight-b4-b2;
+    // key press area, left turn, right turn, left, right, down
+    [this.add.zone(0, h-b4-b4, b2, b4).setOrigin(0).setName('clockwise').setInteractive(),
+      this.add.zone(width-b2, h-b4-b4, b2, b4).setOrigin(0).setName('cc').setInteractive(),
+      this.add.zone(0, h-b4, b2, b4).setOrigin(0).setName('left').setInteractive(),
+      this.add.zone(width-b2, h-b4, b2, b4).setOrigin(0).setName('right').setInteractive(),
+      this.add.zone(b2, gWindowHeight-b2, width-b4, b2).setOrigin(0).setName('down').setInteractive()]
+    .forEach(z => g.strokeRect(z.x, z.y, z.width, z.height));
+
     this.input.on('gameobjectdown', function (pointer, gameObject) {
         const key = gameObject.name;
         if (['clockwise', 'cc'].includes(key)) {
@@ -425,7 +398,7 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         var new_y = new_coord[1];
         tetro.cells[i][0] = new_x;
         tetro.cells[i][1] = new_y;
-        tetro.sprites[i].x = tetro.id*(gameWidth+menuWidth)+(gInGameOffsetX+0.5+new_x)*blockSize*gScale;
+        tetro.sprites[i].x = tetro.id*(1)+(gInGameOffsetX+0.5+new_x)*blockSize*gScale;
         tetro.sprites[i].y = (gInGameOffsetY+0.5+new_y)*blockSize*gScale;
         scene[player][old_x][old_y] = 0;
         scene[player][new_x][new_y] = blockValue;

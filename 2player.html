@@ -1,0 +1,115 @@
+<!--
+/*
+* Author: Jerome Renaux
+* E-mail: jerome.renaux@gmail.com
+ */
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="phaser.min.js"></script>
+    <script type="text/javascript" src="menu.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+    <script type="text/javascript" src="leaderboard.js"></script>
+    <title>Tetris</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            background-color: black;
+        }
+        #game{
+            position: relative;
+            margin-left: auto;
+            margin-right: auto;
+            width: 908px;
+          }
+        #keys{
+            color: white;
+            font-weight: bold;
+            top: 200px;
+            left: 160px;
+            display: none;
+            position: absolute;
+            padding: 15px;
+            background-image: url('assets/electric.jpg');
+        }
+        #keys div{
+            margin-right: 15px;
+            min-width: 100px;
+        }
+        #cup {
+            position: absolute;
+            display: none;
+            width: 128px;
+            height: 128px;
+            top: 500px;
+            left: 390px;
+        }
+        #name {
+            color: white;
+            font-weight: bold;
+            display: none;
+            background-image: url('assets/electric.jpg');
+            top: 400px;
+            left: 320px;
+            text-align: center;
+            width: 250px;
+            position: absolute;
+            padding: 15px;
+        }
+        input{
+            background-color: black;
+            color: white;
+            border: 1px solid white;
+            padding: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div style='' id='game'>
+        <div id="keys">
+            <div>
+                Rotate counterclockwise: <br/>
+                Rotate clockwise:<br/>
+                Pause: <br/>
+                Player2 rotate cc: <br/>
+            </div>
+            <div>
+               <input readonly type="text" id="rotateleft" title="Key to rotate tetromino counterclockwise" value="UP" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="rotateright" title="Key to rotate tetromino clockwise" value="X" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="pause" title="Key to pause game" value="SPACEBAR" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="rotateleft2" title="player2 Key to rotate clockwise" value="W" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+            </div>
+            <div>
+                Move left:<br/>
+                Move right:<br/>
+                Move down: <br/>
+                Player2 left: <br/>
+                Player2 right: <br/>
+                Player2 Move down: <br/>
+            </div>
+            <div>
+                <input readonly type="text" id="moveleft" title="Key to move tetromino to the left" value="LEFT" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="moveright" title="Key to move tetromino to the right" value="RIGHT" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="movedown" title="Key to move tetromino down" value="DOWN" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="moveleft2" title="Key to move tetromino left" value="A" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="moveright2" title="Key to move tetromino right" value="D" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+                <input readonly type="text" id="movedown2" title="Key to move tetromino down" value="S" onkeydown="Menu.updateKey(event,this.id)"/><br/>
+            </div>
+        </div>
+        <div id="cup">
+            <img src="assets/cup.png" onclick="loadLeaderboard()"/>
+        </div>
+        <div id="name">
+            Enter your name: <br/>
+            <input type="text" id="playername"/><br/>
+            <input type="submit" title="Player name" value="OK" onclick="sendScore(); loadLeaderboard();"/>
+        </div>
+    </div>
+</body>
+<script src="main.js" type="text/javascript"></script>
+</html>
