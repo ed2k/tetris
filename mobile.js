@@ -603,7 +603,7 @@ App.prototype.start = function() {
     var e = [Game];
     let config = {
         type: Phaser.AUTO,
-        //width: 9*64,
+        width: gWindowWidth,
         height: gWindowHeight,
         parent: document.getElementById('gameLayout'),
         scene: e,
