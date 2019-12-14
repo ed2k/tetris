@@ -33,11 +33,11 @@ function resizeApp()
 {
 	var div = document.getElementById('gameLayout');
     div.style.height = window.innerHeight;
-    // assume height 28 blocks
-    gScale = window.innerHeight/28/blockSize;
+    // assume height > 28 blocks, width 16 blocks
     gWindowHeight = window.innerHeight;
     gWindowWidth = window.innerWidth;
-    gInGameOffsetX = (gWindowWidth/2-numBlocksX/2*blockSize*gScale)/blockSize-0.25;
+    gScale = gWindowWidth/16/blockSize;
+    gInGameOffsetX = (gWindowWidth/2-numBlocksX/2*blockSize*gScale)/blockSize-0.5;
 }
 		
 window.addEventListener('resize', function(e)

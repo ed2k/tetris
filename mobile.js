@@ -11,7 +11,7 @@ var nbBlockTypes = 7; // 7 possible tetrominoes
 var blockSize = 32; // px
 var gScale = 1;
 var gInGameOffsetX = 4;
-var gInGameOffsetY = 6;
+var gInGameOffsetY = 4;
 var numBlocksY = 19; // make the grid 19 blocks high
 var numBlocksX = 10; // make the grid 19 blocks wide
 
