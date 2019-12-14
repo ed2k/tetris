@@ -10,8 +10,8 @@ var blocksPerTetromino = 4;
 var nbBlockTypes = 7; // 7 possible tetrominoes
 var blockSize = 32; // px
 var gScale = 1;
-var gInGameOffsetX = 4;
-var gInGameOffsetY = 4;
+var gInGameOffsetX = 2.75;
+var gInGameOffsetY = 3;
 var numBlocksY = 19; // make the grid 19 blocks high
 var numBlocksX = 10; // make the grid 19 blocks wide
 
@@ -159,6 +159,7 @@ Game.create = function() {
     g.lineStyle(1, 0x00FF00, 1.0);
     const unit = blockSize*gScale;
     g.strokeRect(gInGameOffsetX*unit, gInGameOffsetY*unit, numBlocksX*unit, numBlocksY*unit);
+    g.strokeRect(1, 1, gWindowWidth-2, gWindowHeight-2);
 
     // Sound on/off icon
     var sound = game.add.sprite(game.cameras.main.width-38, 0, 'sound', 0);

@@ -1,9 +1,3 @@
-<!--
-/*
-* Author: Jerome Renaux
-* E-mail: jerome.renaux@gmail.com
- */
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,6 +32,7 @@ function resizeApp()
     gWindowWidth = window.innerWidth;
     gScale = gWindowWidth/16/blockSize;
     gInGameOffsetX = (gWindowWidth/2-numBlocksX/2*blockSize*gScale)/blockSize-0.5;
+    console.log(gInGameOffsetX);
 }
 		
 window.addEventListener('resize', function(e)
