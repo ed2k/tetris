@@ -95,13 +95,13 @@ class Tetromino {
         }
         this.sprites = [];
         var conflict = false; // Are there occupied cells where the tetrominon will appear? If yes -> game over
-        const spriteX = inGame ? gInGameOffsetY : 0.5;
-        const spriteY = inGame ? gInGameOffsetY : (1.5);
+        const spriteX = inGame ? gInGameOffsetX+0.5 : 1.5;
+        const spriteY = inGame ? gInGameOffsetY+0.5 : (1.5);
         for(var i = 0; i < blocksPerTetromino; i++) {
             // Compute the coordinates of each block of the tetromino, using it's offset from the center
             var x = c_x + offsets[this.shape][i][0];
             var y = c_y + offsets[this.shape][i][1];
-            var sprite = this.game.add.sprite((spriteX + x-2) * blockSize * gScale, 
+            var sprite = this.game.add.sprite((spriteX + x) * blockSize * gScale, 
               (spriteY + y) * blockSize * gScale, 'blocks', this.color)
               .setScale(gScale);
             this.sprites.push(sprite);
@@ -158,18 +158,11 @@ Game.create = function() {
     pauseState = false;
     gameOverState = false;
 
-    // Places separator between the scene and the right pannel
-    // var rect1 = new Phaser.Geom.Rectangle(0, 200, 100, 200);
-    // var rect2 = new Phaser.Geom.Rectangle(gameWidth-200, 200, 100, 200);
-    // var rect3 = new Phaser.Geom.Rectangle(0, 400, 100, 200);
-    // var rect4 = new Phaser.Geom.Rectangle(gameWidth-200, 400, 100, 200);
-    // var rect5 = new Phaser.Geom.Rectangle(0, 600, gameWidth, 200);
-    // game.add.graphics.fillStyle(0xffffff, 0.5);   // color: 0xRRGGBB
-    // game.add.graphics.fillRectShape(rect1);
-    // game.add.graphics.fillRectShape(rect2);
-    // game.add.graphics.fillRectShape(rect3);
-    // game.add.graphics.fillRectShape(rect4);
-    // game.add.graphics.fillRectShape(rect5);
+    // Places separator around the scene
+    const g = game.add.graphics(0,0);
+    g.lineStyle(1, 0x00FF00, 1.0);
+    const unit = blockSize*gScale;
+    g.strokeRect(gInGameOffsetX*unit, gInGameOffsetY*unit, numBlocksX*unit, numBlocksY*unit);
 
     // var middleSeparator = game.add.graphics(gameWidth, 0);
     // middleSeparator.lineStyle(3, 0xffffff, 0.5);
@@ -432,8 +425,8 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         var new_y = new_coord[1];
         tetro.cells[i][0] = new_x;
         tetro.cells[i][1] = new_y;
-        tetro.sprites[i].x = tetro.id*(gameWidth+menuWidth)+(gInGameOffsetX+new_x)*blockSize*gScale;
-        tetro.sprites[i].y = (gInGameOffsetY+new_y)*blockSize*gScale;
+        tetro.sprites[i].x = tetro.id*(gameWidth+menuWidth)+(gInGameOffsetX+0.5+new_x)*blockSize*gScale;
+        tetro.sprites[i].y = (gInGameOffsetY+0.5+new_y)*blockSize*gScale;
         scene[player][old_x][old_y] = 0;
         scene[player][new_x][new_y] = blockValue;
     }
