@@ -19,7 +19,7 @@ var movementLag = 100; // Delay in ms below which two consecutive key presses ar
 
 var scoreX = 0; // x position of the score text
 
-var nbNext = 6; // number of next tetrominoes to display on the right
+var nbNext = 5; // number of next tetrominoes to display on the right
 const EMPTY = 0;
 const blockValue = 1; // value in the grid of a cell occupied by a block of a fallen tetromino
 const occupiedValue = 2; // value in the grid of a cell occupied by a block of the currently falling tetromino
@@ -132,7 +132,7 @@ Game.preload = function () {
 }
 
 Game.create = function() {
-    const game = this;
+    game = this;
     //this.scale.startFullscreen();
     // 2D array of numBlocksX*numBlocksY cells corresponding to the playable scene; will contains 0 for empty, 1 if there is already
     // a block from the current tetromino, and 2 if there is a block from a fallen tetromino
@@ -159,7 +159,7 @@ Game.create = function() {
     g.lineStyle(1, 0x00FF00, 1.0);
     const unit = blockSize*gScale;
     g.strokeRect(gInGameOffsetX*unit, gInGameOffsetY*unit, numBlocksX*unit, numBlocksY*unit);
-    g.strokeRect(1, 1, gWindowWidth-2, gWindowHeight-2);
+    g.strokeRect(0, 0, gWindowWidth, gWindowHeight);
 
     // Sound on/off icon
     var sound = game.add.sprite(game.cameras.main.width-38, 0, 'sound', 0);
@@ -445,11 +445,18 @@ function cleanLine(player, line){
     var delay = 0;
     for (var k = 0; k < numBlocksX; k++) {
         // Make a small animation to send the removed blocks flying to the top
-        // var tween = selectTetromino(player).game.tweens.add(sceneSprites[player][k][line]);
-        // tween.to({ y: 0}, 500,null,false,delay);
-        // tween.onComplete.add(destroy, this);
-        // tween.start();
-        sceneSprites[player][k][line].destroy();
+        game.add.tween( {
+            targets: sceneSprites[player][k][line],
+            delay: delay,
+            y: 0,
+            duration: 500,
+            ease: "Linear",
+            callbackScope: this,
+            onCompleteParams: [sceneSprites[player][k][line]],
+            onComplete: function(twn, tgt, s) {
+                s.destroy();
+            }
+        });
         sceneSprites[player][k][line] = null;
         scene[player][k][line] = EMPTY;
         delay += 50; // For each block, start the tween 50ms later so they move wave-like       
@@ -517,11 +524,14 @@ function collapse(player, lines){
                 lscene[j][i + lines.length] = occupiedValue;
                 lscene[j][i] = 0;
                 // Make some animation to collapse the lines
-                // var tween = game.add.tween(lsSprites[j][i+ lines.length]);
                 var new_y = lsSprites[j][i+ lines.length].y + (lines.length * blockSize*gScale);
                 lsSprites[j][i + lines.length].y = new_y;
-                // tween.to({ y: new_y}, 500,null,false);                
-                // tween.start();
+                game.add.tween( {
+                    targets: lsSprites[j][i+ lines.length],
+                    duration: 500,
+                    ease: "Linear",
+                    y: new_y
+                });
             }
         }
     }
