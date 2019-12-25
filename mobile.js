@@ -13,7 +13,7 @@ var gScale = 1;
 var gInGameOffsetX = 2.75;
 var gInGameOffsetY = 3;
 var numBlocksY = 19; // make the grid 19 blocks high
-var numBlocksX = 10; // make the grid 19 blocks wide
+var numBlocksX = 10; // make the grid 10 blocks wide
 
 var movementLag = 100; // Delay in ms below which two consecutive key presses are counted as the same one (to avoid super fast movement)
 
@@ -152,7 +152,7 @@ Game.create = function() {
 
     const width = gWindowWidth;
     scoreText = [this.add.text(scoreX, 4*blockSize*gScale, '0',
-      { font: '16px Courier', fill: '#00ff00' }), null];
+      { fontFamily: 'Courier', fontSize: blockSize*gScale, fill: '#00ff00' }), null];
 
     // spawn a new tetromino and the scene and update the next one
     manageTetrominos(0, this);
@@ -192,8 +192,8 @@ Game.create = function() {
 
 }
 
-// global scoreIncrement, completedLines, scoreText, linesTxt;
-function updateScore(player){
+// global scoreIncrement, completedLines, scoreText
+function updateScore(player) {
     score[player] += scoreIncrement;
     completedLines[player]++;
     scoreText[player].setText(score[player]);
@@ -201,7 +201,7 @@ function updateScore(player){
     updateTimer();
 }
 
-function updateTimer(){
+function updateTimer() {
     if(completedLines[0]%linesThreshold == 0 || completedLines[1] % linesThreshold == 0){
         //loop.delay -= speedUp; // Accelerates the fall speed
         scoreIncrement += scorePlus; // Make lines more rewarding
@@ -512,18 +512,15 @@ function fallLoop(game){
 // Puts a shade on the stage for the game over and pause screens
 function makeShade(){
     shade = game.add.graphics(0, 0);
-    shade.beginFill(0x000000,0.6);
-    shade.drawRect(0,0,game.world.width,game.world.height);
-    shade.endFill();
+    shade.fillStyle(0x000000,0.6);
+    shade.fillRect(0, 0, gWindowWidth, gWindowHeight);
 }
 
 function managePauseScreen(){
     pauseState = !pauseState;
     if(pauseState){
         makeShade();
-        pauseText = game.add.bitmapText(game.world.centerX, game.world.centerY, 'videogame', 'PAUSE',64);
-        pauseText.anchor.setTo(0.5);
-
+        pauseText = game.add.text(gWindowWidth/2, gWindowHeight/2, 'PAUSE');
     }else{
         timer.resume();
         shade.clear();
@@ -535,10 +532,9 @@ function gameOver(){
     gameOverState = true;
     game.input.keyboard.enabled = false;
     makeShade();
-    var gameover = game.add.bitmapText(game.world.centerX, game.world.centerY, 'gameover', 'GAME OVER',64);
-    gameover.anchor.setTo(0.5);
+    var gameover = game.add.text(gWindowWidth/2, gWindowHeight/2, 'GAME OVER');
     // Display the form to input your name for the leaderboard
-    document.getElementById("name").style.display =  "block";
+    //document.getElementById("name").style.display =  "block";
 }
 
 var App = function() {};
