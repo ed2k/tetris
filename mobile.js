@@ -67,7 +67,7 @@ var move_offsets = {
 };
 
 // Lots of global variables ; should encapsulate more in future work
-var tetromino, pause, pauseText, scoreTitle, scoreText, linesText, scene, sceneSprites, timer, loop, shade;
+var tetromino, pause, pauseText, scoreTitle, scoreText, scene, sceneSprites, timer, loop, shade;
 var currentMovementTimer = 0; // counter to prevent excessive movements when key press or multiple key downs
 
 // The Tetromino object used to represent the falling tetromino
@@ -115,9 +115,6 @@ class Tetromino {
 
 var Game = new Phaser.Scene("Game");
 Game.preload = function () {
-    // load the fonts here for use in the different game states
-    this.load.bitmapFont('desyrel', 'assets/fonts/desyrel.png', 'assets/fonts/desyrel.xml');
-
     this.load.spritesheet('blocks','assets/blocks.png', 
         {frameWidth: blockSize, frameHeight: blockSize/*,nbBlockTypes+1*/});
     // Icon to turn sound on/off  
@@ -154,10 +151,8 @@ Game.create = function() {
     g.strokeRect(0, 0, gWindowWidth, gWindowHeight);
 
     const width = gWindowWidth;
-    scoreText = [game.add.bitmapText(scoreX, 4*blockSize*gScale, 'desyrel', '0', 64)
-      .setScale(gScale), null];
-    linesText = [game.add.bitmapText(width - 3*blockSize*gScale, 4*blockSize*gScale,
-         'desyrel', '0', 64).setScale(gScale), null];
+    scoreText = [this.add.text(scoreX, 4*blockSize*gScale, '0',
+      { font: '16px Courier', fill: '#00ff00' }), null];
 
     // spawn a new tetromino and the scene and update the next one
     manageTetrominos(0, this);
@@ -201,8 +196,7 @@ Game.create = function() {
 function updateScore(player){
     score[player] += scoreIncrement;
     completedLines[player]++;
-    scoreText[player].text = score[player];
-    linesText[player].text = completedLines[player];
+    scoreText[player].setText(score[player]);
     //alignText();
     updateTimer();
 }
@@ -214,11 +208,10 @@ function updateTimer(){
     }
 }
 
-// global scoreText, linesText, scoreTitle
+// global scoreText, scoreTitle
 function alignText(){
     var center = scoreTitle.x + scoreTitle.textWidth/2;
     scoreText[0].x = center - (scoreText[0].textWidth * 0.5);
-    linesText[0].x = center - (linesText[0].textWidth * 0.5);
 }
 
 // global queue
