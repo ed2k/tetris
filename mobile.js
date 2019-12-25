@@ -116,19 +116,11 @@ class Tetromino {
 var Game = new Phaser.Scene("Game");
 Game.preload = function () {
     // load the fonts here for use in the different game states
-    this.load.bitmapFont('gameover', 'assets/fonts/gameover.png', 'assets/fonts/gameover.fnt');
-    this.load.bitmapFont('videogame', 'assets/fonts/videogame.png', 'assets/fonts/videogame.fnt'); // converted from ttf using http://kvazars.com/littera/
     this.load.bitmapFont('desyrel', 'assets/fonts/desyrel.png', 'assets/fonts/desyrel.xml');
-    this.load.spritesheet('button', 'assets/start.png', {frameWidth: 201, frameHeight: 71});
-    this.load.audio('music','assets/sound/tetris.mp3'); // load music now so it's loaded by the time the game starts
 
     this.load.spritesheet('blocks','assets/blocks.png', 
         {frameWidth: blockSize, frameHeight: blockSize/*,nbBlockTypes+1*/});
     // Icon to turn sound on/off  
-    this.load.spritesheet('sound','assets/sound.png', {frameWidth: 32, frameHeight: 32});
-    this.load.audio('move','assets/sound/move.mp3','assets/sound/move.ogg');
-    this.load.audio('win','assets/sound/win.mp3','assets/sound/win.ogg');
-    this.load.audio('gameover','assets/sound/gameover.mp3','assets/sound/gameover.ogg');
 }
 
 Game.create = function() {
@@ -160,11 +152,6 @@ Game.create = function() {
     const unit = blockSize*gScale;
     g.strokeRect(gInGameOffsetX*unit, gInGameOffsetY*unit, numBlocksX*unit, numBlocksY*unit);
     g.strokeRect(0, 0, gWindowWidth, gWindowHeight);
-
-    // Sound on/off icon
-    var sound = game.add.sprite(game.cameras.main.width-38, 0, 'sound', 0);
-    sound.inputEnabled = true;
-    //sound.events.onInputDown.add(Game.radio.manageSound, this);
 
     const width = gWindowWidth;
     scoreText = [game.add.bitmapText(scoreX, 4*blockSize*gScale, 'desyrel', '0', 64)
@@ -208,46 +195,7 @@ Game.create = function() {
         loop: true
     });
 
-    // Sound effets and Game.radio.music
-    // Game.radio.moveSound = game.add.audio('move');
-    // Game.radio.winSound = game.add.audio('win');
-    // Game.radio.gameOverSound = game.add.audio('gameover');
-    // Game.radio.music = game.add.audio('music');
-    // Game.radio.music.volume = 0.2;
-    // Game.radio.music.loopFull();
 }
-
-Game.radio = { // object that stores sound-related information
-    soundOn : true,
-    moveSound : null,
-    gameOverSound : null,
-    winSound : null,
-    music : null,
-    // Play music if all conditions are met
-    playMusic : function(){
-        if(Game.radio.soundOn && !pauseState){
-            Game.radio.music.resume();
-        }
-    },
-    // Toggle sound on/off
-    manageSound : function(sprite){
-        sprite.frame = 1- sprite.frame;
-        Game.radio.soundOn = !Game.radio.soundOn;
-        if(Game.radio.soundOn){
-            Game.radio.playMusic();
-        }else{
-            Game.radio.music.pause();
-        }
-    },
-    // Play sound if all conditions are met
-    playSound : function(sound) {
-        if (Game.radio.soundOn && !pauseState) {
-            //sound.play();
-        }
-    }
-};
-
-
 
 // global scoreIncrement, completedLines, scoreText, linesTxt;
 function updateScore(player){
@@ -408,9 +356,6 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         var center_coord = centerCallback(tetro, dir);
         tetro.center = [center_coord[0],center_coord[1]];
     }
-    if(soundOnMove) {
-        //Game.radio.playSound(Game.radio.moveSound);
-    }
 }
 
 function lineSum(player, l){
@@ -431,7 +376,6 @@ function checkLines(player, lines) {
         if(sum == (numBlocksX*occupiedValue)) { // the line is full
             updateScore(player);
             collapsedLines.push(lines[j]);
-            Game.radio.playSound(Game.radio.winSound);
             cleanLine(player, lines[j]);
         }
     }
@@ -583,14 +527,12 @@ function makeShade(){
 function managePauseScreen(){
     pauseState = !pauseState;
     if(pauseState){
-        Game.radio.music.pause();
         makeShade();
         pauseText = game.add.bitmapText(game.world.centerX, game.world.centerY, 'videogame', 'PAUSE',64);
         pauseText.anchor.setTo(0.5);
 
     }else{
         timer.resume();
-        Game.radio.playMusic();
         shade.clear();
         pauseText.destroy();
     }
@@ -599,8 +541,6 @@ function managePauseScreen(){
 function gameOver(){
     gameOverState = true;
     game.input.keyboard.enabled = false;
-    Game.radio.music.pause();
-    Game.radio.playSound(Game.radio.gameOverSound);
     makeShade();
     var gameover = game.add.bitmapText(game.world.centerX, game.world.centerY, 'gameover', 'GAME OVER',64);
     gameover.anchor.setTo(0.5);
