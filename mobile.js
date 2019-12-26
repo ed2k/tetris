@@ -78,12 +78,14 @@ class Tetromino {
         this.shape = Math.floor(Math.random() * nbBlockTypes);
         this.color = this.shape
         this.sprites = []; // list of the sprites of each block
+        this.shadowSprites = [];
         this.cells = []; // list of the cells occupied by the tetromino
         this.center = [0,0];    
     }
+
     // materialize makes the tetromino appear, either in the scene (inGame = true) or on the right (inGame = false) if it's the next tetromino
     materialize(c_x, c_y, inGame) {
-        this.center = [c_x,c_y];
+        this.center = [c_x, c_y];
         this.cells = [];
         // clean previous sprites if any
         for(var j = 0; j < this.sprites.length; j++){
@@ -101,15 +103,55 @@ class Tetromino {
               (spriteY + y) * blockSize * gScale, 'blocks', this.color)
               .setScale(gScale);
             this.sprites.push(sprite);
+            var shade = this.game.add.graphics(0, 0);
             this.cells.push([x, y]);
             if (inGame) {
-                if(!validateCoordinates(this.id, x,y)) {
+                if(!validateCoordinates(scene[this.id], x,y)) {
                     conflict = true;
                 }
                 scene[this.id][x][y] = blockValue;
+                var shadow = shade.strokeRect(sprite.x-0.5*blockSize*gScale, sprite.y-0.5*blockSize*gScale,
+                  sprite.width*gScale, sprite.height*gScale);
+                this.shadowSprites.push(shadow);
             }
         }
         return conflict;
+    }
+
+    canMoveDown(cells) {
+        for(var i = 0; i < cells.length; i++){
+            var new_y = cells[i][1] + 1;
+            if(!validateCoordinates(scene[this.id], cells[i][0], new_y)){
+                return false;
+            }        
+        }
+        return true;
+    }
+
+    moveDown(cells){
+        for(var i = 0; i < cells.length; i++){
+            var new_y = cells[i][1] + 1;
+            cells[i][1] = new_y;
+        }
+    }
+
+    updateTarget() {
+        var shade = this.game.add.graphics(0, 0);
+        var cells = [];
+        this.cells.forEach(c => cells.push([c[0], c[1]]));
+        while (this.canMoveDown(cells)) {
+            this.moveDown(cells);
+        }
+
+        for (let i = 0; i < this.sprites.length; i++) {
+            const delta = cells[i][1] - this.cells[i][1];
+            const sprite = this.sprites[i];
+            this.shadowSprites[i].destroy();
+            this.shadowSprites[i] = shade.strokeRect(sprite.x-0.5*blockSize*gScale, sprite.y+(delta-0.5)*blockSize*gScale,
+                sprite.width*gScale, sprite.height*gScale);
+            }
+        console.log(cells[0][0], cells[1][0], cells[2][0], cells[3][0]);
+        console.log(cells[0][1], cells[1][1], cells[2][1], cells[3][1]);
     }
 }
 
@@ -117,7 +159,7 @@ var Game = new Phaser.Scene("Game");
 Game.preload = function () {
     this.load.spritesheet('blocks','assets/blocks.png', 
         {frameWidth: blockSize, frameHeight: blockSize/*,nbBlockTypes+1*/});
-    // Icon to turn sound on/off  
+    // Icon to turn sound on/off
 }
 
 Game.create = function() {
@@ -173,11 +215,11 @@ Game.create = function() {
         const key = gameObject.name;
         if (['clockwise', 'cc'].includes(key)) {
             if(canMove(0, rotate, key)){
-                move(0, rotate, null, key, 1);
+                move(0, rotate, null, key);
             }
         } else {
             if(canMove(0, slide, key)){
-                move(0, slide, slideCenter, key, 1);
+                move(0, slide, slideCenter, key);
             }
         }
     });
@@ -259,16 +301,16 @@ function sendScore(){
 }
 
 // Move a block of the falling tetromino left, right or down
-function slide(tetro, block,dir){
+function slide(tetro, block, dir){
     var new_x = tetro.cells[block][0] + move_offsets[dir][0];
     var new_y = tetro.cells[block][1] + move_offsets[dir][1];
     return [new_x,new_y];
 }
 
 // Move the center of the falling tetromino left, right or down
-function slideCenter(tetro, dir){
-    var new_center_x = tetro.center[0] + move_offsets[dir][0];
-    var new_center_y = tetro.center[1] + move_offsets[dir][1];
+function slideCenter(center, dir){
+    var new_center_x = center[0] + move_offsets[dir][0];
+    var new_center_y = center[1] + move_offsets[dir][1];
     return [new_center_x,new_center_y];
 }
 
@@ -289,7 +331,7 @@ function rotate(tetro, block,dir){
 
 // Uses the passed callback to check if the desired move (slide or rotate) doesn't conflict with something
 // tetromino
-function canMove(player, coordinatesCallback,dir) {
+function canMove(player, coordinatesCallback, dir) {
     if(pauseState){
         return false;
     }
@@ -298,7 +340,7 @@ function canMove(player, coordinatesCallback,dir) {
         var new_coord = coordinatesCallback(tetro, i, dir); // return coords in terms of cells, not pixels
         var new_x = new_coord[0];
         var new_y = new_coord[1];
-        if(!validateCoordinates(player, new_x,new_y)){
+        if(!validateCoordinates(scene[player], new_x, new_y)){
             return false;
         }        
     }
@@ -306,7 +348,7 @@ function canMove(player, coordinatesCallback,dir) {
 }
 
 // global scene, occupiedValue
-function validateCoordinates(player, new_x,new_y){
+function validateCoordinates(logicalMap, new_x,new_y){
     if(new_x < 0 || new_x > numBlocksX-1){
         //console.log('Out of X bounds');
         return false;
@@ -315,7 +357,7 @@ function validateCoordinates(player, new_x,new_y){
         //console.log('Out of Y bounds');
         return false;
     }
-    if(scene[player][new_x][new_y] == occupiedValue){
+    if(logicalMap[new_x][new_y] == occupiedValue){
         //console.log('Cell is occupied');
         return false;
     }
@@ -330,7 +372,7 @@ function selectTetromino(player) {
 }
 
 // Move (slide or rotate) a tetromino according to the provided callback
-function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
+function move(player, coordinatesCallback, centerCallback, dir){
     const tetro = selectTetromino(player);
     for(var i = 0; i < tetro.cells.length; i++){
         var old_x = tetro.cells[i][0];
@@ -346,9 +388,10 @@ function move(player, coordinatesCallback,centerCallback,dir,soundOnMove){
         scene[player][new_x][new_y] = blockValue;
     }
     if(centerCallback) {
-        var center_coord = centerCallback(tetro, dir);
+        var center_coord = centerCallback(tetro.center, dir);
         tetro.center = [center_coord[0],center_coord[1]];
     }
+    tetro.updateTarget();
 }
 
 function lineSum(player, l){
@@ -400,42 +443,6 @@ function cleanLine(player, line){
     }
 }
 
-function destroy(sprite){
-    sprite.destroy();
-}
-
-// global scene, sceneSprites
-function increaseLines(player, numLines) {
-    const lscene = scene[player];
-    const lsSprites = sceneSprites[player];
-    // shit all static blocks uplscene[j][i]
-    for(let i = numLines; i < numBlocksY; i++){
-        for(let j = 0; j < numBlocksX; j++){
-            if (lscene[j][i-numLines] == EMPTY && lscene[j][i] == occupiedValue) { 
-                lsSprites[j][i - numLines] = lsSprites[j][i];
-                lscene[j][i - numLines] = lscene[j][i];
-                lsSprites[j][i] = null;
-                lscene[j][i] = EMPTY;
-                // Make some animation to shift the lines
-                var tween = game.add.tween(lsSprites[j][i-numLines]);
-                var new_y = lsSprites[j][i-numLines].y - (blockSize);
-                tween.to({ y: new_y}, 500,null,false);
-                tween.start();
-            }
-        }   
-    }
-    // fill the new lines at the bottom
-    for(let i = numBlocksY-numLines; i < numBlocksY; i++){
-        for(let j = 0; j < numBlocksX; j++){
-            if (lscene[j][i-numLines] == occupiedValue) {
-                const sprite = lsSprites[j][i-numLines];
-                const color = player ? 0:1;
-                lsSprites[j][i] = game.add.sprite(sprite.x, sprite.y+(numLines-1)*blockSize, 'blocks', color);
-                lscene[j][i] = occupiedValue;                
-            }
-        }
-    }
-}
 
 // Once a line has been cleared, make the lines above it fall down ; the argument lines is a list of the y coordinates of the
 // global lines that have been cleared
@@ -472,9 +479,6 @@ function collapse(player, lines){
             }
         }
     }
-    if (lines.length > 1) {
-        //increaseLines(player ? 0:1, lines.length-1);
-    }
 }
 
 function spawnTetromino(player, game) {
@@ -491,10 +495,13 @@ function spawnTetromino(player, game) {
         var y = tetro.cells[i][1];
         scene[player][x][y] = occupiedValue;
         sceneSprites[player][tetro.cells[i][0]][tetro.cells[i][1]] = tetro.sprites[i];
+        tetro.shadowSprites[i].destroy();
     }
+    tetro.shadowSprites = [];
     checkLines(player, lines); // check if lines are center completed
     manageTetrominos(player, game); // spawn a new tetromino and update the next one    
 }
+
 // Makes the falling tetromino fall
 function fallLoop(game){
     if(pauseState || gameOverState){return;}
@@ -503,8 +510,8 @@ function fallLoop(game){
     }
 
     if(canMove(0, slide, "down")){
-        move(0, slide,slideCenter, "down",0);
-    } else {
+        move(0, slide, slideCenter, "down");
+    } else {        
         spawnTetromino(0, game); // spawn a new tetromino and update the next one
     }
 }
