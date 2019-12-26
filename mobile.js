@@ -93,7 +93,7 @@ class Tetromino {
         }
         this.sprites = [];
         var conflict = false; // Are there occupied cells where the tetrominon will appear? If yes -> game over
-        const spriteX = inGame ? gInGameOffsetX+0.5 : 1.5;
+        const spriteX = inGame ? gInGameOffsetX+0.5 : 0.5;
         const spriteY = inGame ? gInGameOffsetY+0.5 : (1.5);
         for(var i = 0; i < blocksPerTetromino; i++) {
             // Compute the coordinates of each block of the tetromino, using it's offset from the center
@@ -150,8 +150,6 @@ class Tetromino {
             this.shadowSprites[i] = shade.strokeRect(sprite.x-0.5*blockSize*gScale, sprite.y+(delta-0.5)*blockSize*gScale,
                 sprite.width*gScale, sprite.height*gScale);
             }
-        console.log(cells[0][0], cells[1][0], cells[2][0], cells[3][0]);
-        console.log(cells[0][1], cells[1][1], cells[2][1], cells[3][1]);
     }
 }
 
@@ -202,13 +200,14 @@ Game.create = function() {
     // Register the zone selected by the player on the menu screen. It might not be the best practice to feed in the raw values
     const b2 = 2*blockSize*gScale;
     const b4 = 4*blockSize*gScale;
-    const h = gWindowHeight-b4-b2;
+    const bottom = (3+numBlocksY)*blockSize*gScale;
+    const h = bottom * 7/8;
     // key press area, left turn, right turn, left, right, down
-    [this.add.zone(0, h-b4-b4, b2, b4).setOrigin(0).setName('clockwise').setInteractive(),
-      this.add.zone(width-b2, h-b4-b4, b2, b4).setOrigin(0).setName('cc').setInteractive(),
-      this.add.zone(0, h-b4, b2, b4).setOrigin(0).setName('left').setInteractive(),
-      this.add.zone(width-b2, h-b4, b2, b4).setOrigin(0).setName('right').setInteractive(),
-      this.add.zone(b2, gWindowHeight-b2, width-b4, b2).setOrigin(0).setName('down').setInteractive()]
+    [this.add.zone(0, h-b4, b2, b4).setOrigin(0).setName('clockwise').setInteractive(),
+      this.add.zone(width-b2, h-b4, b2, b4).setOrigin(0).setName('cc').setInteractive(),
+      this.add.zone(0, h, b2, b4).setOrigin(0).setName('left').setInteractive(),
+      this.add.zone(width-b2, h, b2, b4).setOrigin(0).setName('right').setInteractive(),
+      this.add.zone(b2, bottom, width-b4, gWindowHeight-bottom).setOrigin(0).setName('down').setInteractive()]
     .forEach(z => g.strokeRect(z.x, z.y, z.width, z.height));
 
     this.input.on('gameobjectdown', function (pointer, gameObject) {

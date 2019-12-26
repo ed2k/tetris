@@ -33,6 +33,9 @@ function resizeApp()
     div.style.height = gWindowHeight
     // assume height > 19+2+3 blocks, width 3+10+3 blocks
     gScale = gWindowWidth/16/blockSize;
+    if (gWindowWidth*24/16 > gWindowHeight) {
+        gScale = gWindowHeight/24/blockSize;
+    }
     gInGameOffsetX = gWindowWidth/2/blockSize/gScale-numBlocksX/2;
     console.log(gInGameOffsetX);
 }
