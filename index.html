@@ -29,12 +29,13 @@ function resizeApp()
     const oldWidth = gWindowWidth;
     gWindowWidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;
     gWindowHeight = (window.innerHeight > 0) ? window.innerHeight : screen.height;
-    div.style.width = gWindowWidth
-    div.style.height = gWindowHeight
+    div.style.width = gWindowWidth;
+    div.style.height = gWindowHeight;
     // assume height > 19+2+3 blocks, width 3+10+3 blocks
-    gScale = gWindowWidth/16/blockSize;
     if (gWindowWidth*24/16 > gWindowHeight) {
         gScale = gWindowHeight/24/blockSize;
+    } else {
+        gScale = gWindowWidth/16/blockSize;
     }
     gInGameOffsetX = gWindowWidth/2/blockSize/gScale-numBlocksX/2;
     console.log(gInGameOffsetX);

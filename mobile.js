@@ -443,38 +443,36 @@ function cleanLine(player, line){
 }
 
 
-// Once a line has been cleared, make the lines above it fall down ; the argument lines is a list of the y coordinates of the
+// Once a line has been cleared, make the lines above it fall down; the argument lines is a list of the y coordinates of the
 // global lines that have been cleared
 // creat new lines on the other player
 // TODO handle nonconsecutive collabse case
 function collapse(player, lines){
     // Find the min y value of the cleared lines, i.e. the highermost cleared line ; only lines above that one have to collapse
-    var min = 999;
-    for(var k = 0; k < lines.length; k++){
-        if(lines[k] < min){
-            min = lines[k];
-        }
-    }
+    lines.sort();
     const lscene = scene[player];
     const lsSprites = sceneSprites[player];
     // From the highermost cleared line - 1 to the top, collapse the lines
-    for(var i = min-1; i >= 0; i--){
-        for(var j = 0; j < numBlocksX; j++){
-            if(lsSprites[j][i]) {
-                // lines.length the number of lines that have been cleared simultaneously
-                lsSprites[j][i+ lines.length] = lsSprites[j][i];
-                lsSprites[j][i] = null;
-                lscene[j][i + lines.length] = occupiedValue;
-                lscene[j][i] = 0;
-                // Make some animation to collapse the lines
-                var new_y = lsSprites[j][i+ lines.length].y + (lines.length * blockSize*gScale);
-                lsSprites[j][i + lines.length].y = new_y;
-                game.add.tween( {
-                    targets: lsSprites[j][i+ lines.length],
-                    duration: 500,
-                    ease: "Linear",
-                    y: new_y
-                });
+    for (let hightIndex = 0; hightIndex < lines.length; hightIndex++) {
+        const min = lines[hightIndex];
+        for(var i = min-1; i >= 0; i--){
+            for(var j = 0; j < numBlocksX; j++){
+                if(lsSprites[j][i]) {
+                    // lines.length the number of lines that have been cleared simultaneously
+                    lsSprites[j][i + 1] = lsSprites[j][i];
+                    lsSprites[j][i] = null;
+                    lscene[j][i + 1] = occupiedValue;
+                    lscene[j][i] = 0;
+                    // Make some animation to collapse the lines
+                    var new_y = lsSprites[j][i + 1].y + (blockSize*gScale);
+                    lsSprites[j][i + 1].y = new_y;
+                    game.add.tween( {
+                        targets: lsSprites[j][i + 1],
+                        duration: 500,
+                        ease: "Linear",
+                        y: new_y
+                    });
+                }
             }
         }
     }
