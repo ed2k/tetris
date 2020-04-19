@@ -343,17 +343,6 @@ function manageTetrominos(player, game){
     }
 }
 
-// Send the score to the database
-function sendScore(){
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "server.php", true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.onload = function(){};
-    // Not much is done to prevent players to tamper with the score because it would have been overkill for such a toy project
-    var data = "add=1&name="+document.getElementById('playername').value+"&score="+score;
-    xhr.send(data);
-}
-
 // Move a block of the falling tetromino left, right or down
 function slide(tetro, block, dir){
     var new_x = tetro.cells[block][0] + move_offsets[dir][0];
@@ -606,31 +595,7 @@ App.prototype.start = function() {
         scene: e,
         title: "tetris for mobile"
     };    
-	var game = new Phaser.Game(config);
-    game._CONFIG = config;
-    game._CONFIG.centerX = Math.round(.5 * config.width);
-    game._CONFIG.centerY = Math.round(.5 * config.height);
-};
-
-window.onload = function()
-{
-	var app = new App();
-	app.start();
-}
-
-
-var App = function() {};
-App.prototype.start = function() {
-    var e = [Game];
-    let config = {
-        type: Phaser.AUTO,
-        width: gWindowWidth,
-        height: gWindowHeight,
-        parent: document.getElementById('gameLayout'),
-        scene: e,
-        title: "tetris for mobile"
-    };    
-	var game = new Phaser.Game(config);
+	new Phaser.Game(config);
 };
 
 window.onload = function()
