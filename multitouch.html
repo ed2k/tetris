@@ -19,6 +19,8 @@
 <body>
     <div id='gameLayout'></div>
     <script>
+// ----------- start of javascript --------------------------------
+
 var gWindowWidth;
 var gWindowHeight;
 // Resize
@@ -32,8 +34,7 @@ function resizeApp()
     div.style.height = gWindowHeight
 }
 		
-window.addEventListener('resize', function(e)
-{
+window.addEventListener('resize', function(e) {
 	resizeApp();
 });
 
@@ -42,14 +43,16 @@ var text;
 var Game = new Phaser.Scene("Game");
 var mouseObj;
 Game.create = function() {
+    const fontSize = Math.ceil(gWindowWidth/20);
+    console.log(fontSize);
     var textDown = this.add.text(10, 10, '',
-      { font: '16px Courier', fill: '#00ff00' });
+      { font: `${fontSize}px Courier`, fill: '#00ff00' });
     graphics = this.add.graphics(0, 0);
     graphics.fillStyle(0xff0000, 0.5);
-    mouseObj = graphics.fillRect(0, 0, 32, 32);
+    mouseObj = graphics.fillRect(0, 0, fontSize, fontSize);
     this.input.addPointer(9);
 
-    var singleKey = this.add.zone(50, 100, 400, 400).setOrigin(0).setInteractive();
+    var singleKey = this.add.zone(0, 0, gWindowWidth, gWindowHeight).setOrigin(0).setInteractive();
     var game = this;
 
     singleKey.on('pointerdown', function (pointer, obj)
@@ -104,13 +107,14 @@ App.prototype.start = function() {
 	var game = new Phaser.Game(config);
 };
 
-window.onload = function()
-{
+window.onload = function() {
 	var app = new App();
 	app.start();
 }
 
 resizeApp();
+
+// --------------- end of javascript----------------------------
 	</script>
 </body>
 </html>
