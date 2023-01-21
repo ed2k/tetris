@@ -42,22 +42,42 @@ var graphics;
 var text;
 var Game = new Phaser.Scene("Game");
 var mouseObj;
+var cardObj = [];
+var cardText = [];
+
+
+function test() {
+
+}
+
 Game.create = function() {
     const fontSize = Math.ceil(gWindowWidth/20);
     console.log(fontSize);
     var textDown = this.add.text(10, 10, '',
       { font: `${fontSize}px Courier`, fill: '#00ff00' });
     graphics = this.add.graphics(0, 0);
-    graphics.fillStyle(0xff0000, 0.5);
+    graphics.fillStyle(0xff0000, 0.2);
     mouseObj = graphics.fillRect(0, 0, fontSize, fontSize);
+
+    for (let i = 0; i<54*2;i++) {
+        cardObj[i] = this.add.rectangle(fontSize*(i%20)+fontSize/2, 2*fontSize*Math.ceil(i/20), fontSize, fontSize*2);
+        cardObj[i].setStrokeStyle(2, 0x1a65ac);
+        let t = 'K';
+        let s = '♥';
+
+        cardText[i] = this.add.text(fontSize*(i%20), 2*fontSize*Math.ceil(i/20), `${t}\n${s}`,
+            { font: `${fontSize}px Courier`, fill: '#00ff00' });
+    }
+
+
     this.input.addPointer(9);
 
     var singleKey = this.add.zone(0, 0, gWindowWidth, gWindowHeight).setOrigin(0).setInteractive();
     var game = this;
 
-    singleKey.on('gameobjectdown', function (pointer, obj)
-    {
-        textDown.setText('down');
+    singleKey.on('pointerdown', function (pointer, obj) {
+        // only work in desktop
+        textDown.setText('K\n♥');
         new_x = pointer.x;
         new_y = pointer.y;
         game.add.tween( {
@@ -67,21 +87,25 @@ Game.create = function() {
             duration: 500,
             ease: "Linear"
         });
+        cardObj.x = pointer.x;
+        cardObj.y = pointer.y;
     });
 
-    // singleKey.on('pointerover', function (pointer, object)
-    // {
-    //     if (pointer.isDown) {
-    //         textDown.setText('over');
-    //         textDown.x = pointer.x;
-    //         textDown.y = pointer.y;
-    //     }
-    // });
+    singleKey.on('pointerover', function (pointer, object)
+    {
+        // only works in mobile
+        if (pointer.isDown) {
+            textDown.setText('over');
+            textDown.x = pointer.x;
+            textDown.y = pointer.y;
+        }
+    });
 
 }
 
 Game.update = function() {
     if (this.input.mousePointer.isDown) {
+        // only work in desktop
         new_x = this.input.mousePointer.x-16;
         new_y = this.input.mousePointer.y-16;
         this.add.tween( {
@@ -89,7 +113,6 @@ Game.update = function() {
             y: new_y,
             x: new_x
         });
-
     }
 }
 
@@ -102,7 +125,7 @@ App.prototype.start = function() {
         height: gWindowHeight,
         parent: document.getElementById('gameLayout'),
         scene: e,
-        title: "tetris for mobile"
+        title: "card game for mobile"
     };    
 	var game = new Phaser.Game(config);
 };
