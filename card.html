@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="phaser3.min.js"></script>
+    <style>
+        body{
+            margin: 0;
+	        overflow: hidden;            
+        }
+        canvas {
+        	height: 100%;
+        }
+        #game{
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div id='gameLayout'></div>
+    <script>
+// ----------- start of javascript --------------------------------
+
+var gWindowWidth;
+var gWindowHeight;
+// Resize
+function resizeApp()
+{
+    var div = document.getElementById('gameLayout');
+    const oldWidth = gWindowWidth;
+    gWindowWidth = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    gWindowHeight = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+    div.style.width = gWindowWidth
+    div.style.height = gWindowHeight
+}
+		
+window.addEventListener('resize', function(e) {
+	resizeApp();
+});
+
+var graphics;
+var text;
+var Game = new Phaser.Scene("Game");
+var mouseObj;
+Game.create = function() {
+    const fontSize = Math.ceil(gWindowWidth/20);
+    console.log(fontSize);
+    var textDown = this.add.text(10, 10, '',
+      { font: `${fontSize}px Courier`, fill: '#00ff00' });
+    graphics = this.add.graphics(0, 0);
+    graphics.fillStyle(0xff0000, 0.5);
+    mouseObj = graphics.fillRect(0, 0, fontSize, fontSize);
+    this.input.addPointer(9);
+
+    var singleKey = this.add.zone(0, 0, gWindowWidth, gWindowHeight).setOrigin(0).setInteractive();
+    var game = this;
+
+    singleKey.on('gameobjectdown', function (pointer, obj)
+    {
+        textDown.setText('down');
+        new_x = pointer.x;
+        new_y = pointer.y;
+        game.add.tween( {
+            targets: textDown,
+            y: new_y,
+            x: new_x,
+            duration: 500,
+            ease: "Linear"
+        });
+    });
+
+    // singleKey.on('pointerover', function (pointer, object)
+    // {
+    //     if (pointer.isDown) {
+    //         textDown.setText('over');
+    //         textDown.x = pointer.x;
+    //         textDown.y = pointer.y;
+    //     }
+    // });
+
+}
+
+Game.update = function() {
+    if (this.input.mousePointer.isDown) {
+        new_x = this.input.mousePointer.x-16;
+        new_y = this.input.mousePointer.y-16;
+        this.add.tween( {
+            targets: mouseObj,
+            y: new_y,
+            x: new_x
+        });
+
+    }
+}
+
+var App = function() {};
+App.prototype.start = function() {
+    var e = [Game];
+    let config = {
+        type: Phaser.AUTO,
+        width: gWindowWidth,
+        height: gWindowHeight,
+        parent: document.getElementById('gameLayout'),
+        scene: e,
+        title: "tetris for mobile"
+    };    
+	var game = new Phaser.Game(config);
+};
+
+window.onload = function() {
+	var app = new App();
+	app.start();
+}
+
+resizeApp();
+
+// --------------- end of javascript----------------------------
+	</script>
+</body>
+</html>
