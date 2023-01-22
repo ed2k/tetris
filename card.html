@@ -23,6 +23,7 @@
 
 var gWindowWidth;
 var gWindowHeight;
+const cardPerRow = 10;
 // Resize
 function resizeApp()
 {
@@ -68,7 +69,7 @@ function idxToLevel(idx) {
 
 Game.create = function() {
     const game = this;
-    const fontSize = Math.ceil(gWindowWidth/20);
+    const fontSize = Math.ceil(gWindowWidth/cardPerRow);
     console.log(fontSize);
     var textDown = this.add.text(10, 10, '',
       { font: `${fontSize}px Courier`, fill: '#00ff00' });
@@ -78,12 +79,12 @@ Game.create = function() {
 
     console.log(game);
     for (let i = 0; i<54*2;i++) {
-        cardRect = this.add.rectangle(fontSize*(i%20), 2*fontSize*(Math.floor(i/20)), fontSize, fontSize*2);
-        cardRect.setStrokeStyle(fontSize/10, 0x00ff00);
+        cardRect = this.add.rectangle(fontSize*(i%cardPerRow), 2*fontSize*(Math.floor(i/cardPerRow)), fontSize, fontSize*2);
+        cardRect.setStrokeStyle(2*fontSize/cardPerRow, 0x00ff00);
         cardRect.setOrigin(0,0);
         let t = idxToLevel(i);
         let s = '♥';
-        cardText = this.add.text(fontSize*(i%20+0.2), 2*fontSize*(Math.floor(i/20)), `${t}\n${s}`,
+        cardText = this.add.text(fontSize*(i%cardPerRow+0.2), 2*fontSize*(Math.floor(i/cardPerRow)), `${t}\n${s}`,
             { font: `${fontSize}px Courier`, fill: '#00ff00' });
         cardText.setOrigin(0, 0);
 
@@ -96,13 +97,13 @@ Game.create = function() {
 
     singleKey.on('pointerdown', function (pointer, obj) {
         // only work in desktop
-        const i = Math.floor(pointer.x/fontSize) + 20*Math.floor(pointer.y/2/fontSize);
+        const i = Math.floor(pointer.x/fontSize) + cardPerRow*Math.floor(pointer.y/2/fontSize);
         if (i < 108 ) {
             if (cardObj[i].touched) {
-                cardObj[i].cardRect.setStrokeStyle(fontSize/10, 0x00ff00);
+                cardObj[i].cardRect.setStrokeStyle(2*fontSize/cardPerRow, 0x00ff00);
                 cardObj[i].touched = false;
             } else {
-                cardObj[i].cardRect.setStrokeStyle(fontSize/5, 0xff0000);
+                cardObj[i].cardRect.setStrokeStyle(4*fontSize/cardPerRow, 0xff0000);
                 cardObj[i].touched = true;
             }
             return;
@@ -132,13 +133,13 @@ Game.create = function() {
             textDown.x = pointer.x;
             textDown.y = pointer.y;
         }
-        const i = Math.floor(pointer.x/fontSize) + 20*Math.floor(pointer.y/2/fontSize);
+        const i = Math.floor(pointer.x/fontSize) + cardPerRow*Math.floor(pointer.y/2/fontSize);
         if (i < 108 ) {
             if (cardObj[i].touched) {
-                cardObj[i].cardRect.setStrokeStyle(fontSize/10, 0x00ff00);
+                cardObj[i].cardRect.setStrokeStyle(2*fontSize/cardPerRow, 0x00ff00);
                 cardObj[i].touched = false;
             } else {
-                cardObj[i].cardRect.setStrokeStyle(fontSize/5, 0xff0000);
+                cardObj[i].cardRect.setStrokeStyle(4*fontSize/cardPerRow, 0xff0000);
                 cardObj[i].touched = true;
             }
         }
