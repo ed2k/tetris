@@ -45,12 +45,29 @@ var mouseObj;
 var cardObj = [];
 var cardText = [];
 
+function levelToCard(level) {
+    return '23456789TJQKA'.charAt(level);
+}
 
-function test() {
-
+function idxToLevel(idx) {
+    if (idx < 52) {
+        return levelToCard(idx%13);
+    } else if (idx > 53 && idx < 106) {
+        let level = idx - 52;
+        level = level % 13;
+        return levelToCard(level);
+    } else if (idx == 106) {
+        return 'N';
+    } else if (idx == 52) {
+        return 'N';
+    } else if (idx == 53) {
+        return 'M';
+    }
+    return 'M';
 }
 
 Game.create = function() {
+    const game = this;
     const fontSize = Math.ceil(gWindowWidth/20);
     console.log(fontSize);
     var textDown = this.add.text(10, 10, '',
@@ -59,24 +76,37 @@ Game.create = function() {
     graphics.fillStyle(0xff0000, 0.2);
     mouseObj = graphics.fillRect(0, 0, fontSize, fontSize);
 
+    console.log(game);
     for (let i = 0; i<54*2;i++) {
-        cardObj[i] = this.add.rectangle(fontSize*(i%20)+fontSize/2, 2*fontSize*Math.ceil(i/20), fontSize, fontSize*2);
-        cardObj[i].setStrokeStyle(2, 0x1a65ac);
-        let t = 'K';
+        cardRect = this.add.rectangle(fontSize*(i%20), 2*fontSize*(Math.floor(i/20)), fontSize, fontSize*2);
+        cardRect.setStrokeStyle(fontSize/10, 0x00ff00);
+        cardRect.setOrigin(0,0);
+        let t = idxToLevel(i);
         let s = '♥';
-
-        cardText[i] = this.add.text(fontSize*(i%20), 2*fontSize*Math.ceil(i/20), `${t}\n${s}`,
+        cardText = this.add.text(fontSize*(i%20+0.2), 2*fontSize*(Math.floor(i/20)), `${t}\n${s}`,
             { font: `${fontSize}px Courier`, fill: '#00ff00' });
-    }
+        cardText.setOrigin(0, 0);
 
+        cardObj[i] = {cardRect, cardText, touched: false};
+    }
 
     this.input.addPointer(9);
 
     var singleKey = this.add.zone(0, 0, gWindowWidth, gWindowHeight).setOrigin(0).setInteractive();
-    var game = this;
 
     singleKey.on('pointerdown', function (pointer, obj) {
         // only work in desktop
+        const i = Math.floor(pointer.x/fontSize) + 20*Math.floor(pointer.y/2/fontSize);
+        if (i < 108 ) {
+            if (cardObj[i].touched) {
+                cardObj[i].cardRect.setStrokeStyle(fontSize/10, 0x00ff00);
+                cardObj[i].touched = false;
+            } else {
+                cardObj[i].cardRect.setStrokeStyle(fontSize/5, 0xff0000);
+                cardObj[i].touched = true;
+            }
+            return;
+        }
         textDown.setText('K\n♥');
         new_x = pointer.x;
         new_y = pointer.y;
@@ -93,14 +123,26 @@ Game.create = function() {
 
     singleKey.on('pointerover', function (pointer, object)
     {
+        if (!pointer.Down) {
+            return;
+        }
         // only works in mobile
         if (pointer.isDown) {
             textDown.setText('over');
             textDown.x = pointer.x;
             textDown.y = pointer.y;
         }
+        const i = Math.floor(pointer.x/fontSize) + 20*Math.floor(pointer.y/2/fontSize);
+        if (i < 108 ) {
+            if (cardObj[i].touched) {
+                cardObj[i].cardRect.setStrokeStyle(fontSize/10, 0x00ff00);
+                cardObj[i].touched = false;
+            } else {
+                cardObj[i].cardRect.setStrokeStyle(fontSize/5, 0xff0000);
+                cardObj[i].touched = true;
+            }
+        }
     });
-
 }
 
 Game.update = function() {
